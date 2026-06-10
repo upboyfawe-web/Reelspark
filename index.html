@@ -1,872 +1,1047 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ReelSpark – Reel Idea Generator</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --pink:         #FF3B7A;
-      --pink-light:   #FF6B9D;
-      --pink-glow:    rgba(255,59,122,0.16);
-      --purple:       #7B3FE4;
-      --purple-light: #A066FF;
-      --dark:         #0D0D12;
-      --dark-2:       #15151E;
-      --dark-3:       #1E1E2A;
-      --dark-4:       #252535;
-      --dark-5:       #2E2E40;
-      --text:         #F0EEF8;
-      --text-muted:   #8C8AAA;
-      --border:       rgba(255,255,255,0.08);
-      --border-pink:  rgba(255,59,122,0.25);
-      --radius:       14px;
-      --radius-sm:    8px;
-      --radius-xs:    6px;
-      --font-head:    'Syne', sans-serif;
-      --font-body:    'DM Sans', sans-serif;
-    }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ReelSpark – Creator Toolkit</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --ink:        #0A0A10;
+  --ink2:       #111118;
+  --ink3:       #18181F;
+  --ink4:       #21212B;
+  --ink5:       #2A2A36;
+  --pink:       #F5365C;
+  --pink2:      #FF6B8A;
+  --pink-glow:  rgba(245,54,92,.15);
+  --violet:     #7C3AED;
+  --violet2:    #A78BFA;
+  --teal:       #2DD4BF;
+  --amber:      #F59E0B;
+  --text:       #EEEDF5;
+  --muted:      #7B7A96;
+  --border:     rgba(255,255,255,.07);
+  --border-p:   rgba(245,54,92,.22);
+  --glass-bg:   rgba(255,255,255,.04);
+  --glass-border: rgba(255,255,255,.09);
+  --r:          16px;
+  --r-sm:       10px;
+  --r-xs:       7px;
+  --head:       'Syne', sans-serif;
+  --body:       'Plus Jakarta Sans', sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.6;min-height:100vh;overflow-x:hidden}
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── GRAIN OVERLAY ── */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");opacity:.4;pointer-events:none;z-index:0}
 
-    body {
-      background: var(--dark);
-      color: var(--text);
-      font-family: var(--font-body);
-      font-size: 16px;
-      line-height: 1.6;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+/* ── BLOBS ── */
+.blob{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0;animation:blobDrift 18s ease-in-out infinite alternate}
+.blob-1{width:700px;height:700px;background:rgba(124,58,237,.1);top:-250px;left:-200px;animation-delay:0s}
+.blob-2{width:500px;height:500px;background:rgba(245,54,92,.08);bottom:-150px;right:-150px;animation-delay:-6s}
+.blob-3{width:350px;height:350px;background:rgba(45,212,191,.05);top:40%;left:55%;animation-delay:-12s}
+@keyframes blobDrift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(30px,40px) scale(1.08)}}
 
-    .bg-blob {
-      position: fixed; border-radius: 50%;
-      filter: blur(100px); pointer-events: none; z-index: 0;
-    }
-    .bg-blob-1 { width:560px;height:560px;background:rgba(123,63,228,.12);top:-180px;left:-180px; }
-    .bg-blob-2 { width:440px;height:440px;background:rgba(255,59,122,.09);bottom:-120px;right:-120px; }
-    .bg-blob-3 { width:300px;height:300px;background:rgba(160,102,255,.07);top:40%;left:60%; }
+/* ── LAYOUT ── */
+.shell{position:relative;z-index:1;display:flex;min-height:100vh}
 
-    .wrapper {
-      position: relative; z-index: 1;
-      max-width: 820px; margin: 0 auto; padding: 0 20px 100px;
-    }
+/* ── SIDEBAR ── */
+.sidebar{
+  width:240px;flex-shrink:0;
+  background:rgba(10,10,16,.7);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  padding:28px 16px 24px;
+  position:sticky;top:0;height:100vh;
+  overflow-y:auto;
+}
+.sidebar-logo{display:flex;align-items:center;gap:10px;padding:0 8px 28px;border-bottom:1px solid var(--border);margin-bottom:24px}
+.logo-mark{
+  width:36px;height:36px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--pink),var(--violet));
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:800;color:#fff;font-family:var(--head);
+  box-shadow:0 0 20px rgba(245,54,92,.35);
+}
+.logo-text{font-family:var(--head);font-size:18px;font-weight:800;letter-spacing:-.3px;
+  background:linear-gradient(135deg,var(--text),var(--violet2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 
-    header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 26px 0 0; margin-bottom: 52px;
-    }
-    .logo {
-      font-family: var(--font-head); font-size: 22px; font-weight: 800;
-      letter-spacing: -.5px;
-      background: linear-gradient(135deg,var(--pink),var(--purple-light));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .logo span { -webkit-text-fill-color: var(--text); font-weight: 400; }
-    .badge {
-      background: var(--dark-3); border: 1px solid var(--border);
-      border-radius: 100px; font-size: 12px; color: var(--text-muted);
-      padding: 5px 14px; letter-spacing: .5px;
-    }
+.nav-section-label{font-size:10px;font-weight:700;letter-spacing:1.4px;color:var(--muted);text-transform:uppercase;padding:0 10px;margin-bottom:6px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:10px 10px;
+  border-radius:var(--r-sm);font-size:13.5px;font-weight:500;color:var(--muted);
+  cursor:pointer;transition:all .2s;margin-bottom:2px;border:1px solid transparent;
+  user-select:none;
+}
+.nav-item:hover{color:var(--text);background:var(--glass-bg)}
+.nav-item.active{
+  color:var(--text);
+  background:linear-gradient(135deg,rgba(245,54,92,.12),rgba(124,58,237,.1));
+  border-color:rgba(245,54,92,.2);
+}
+.nav-item .nav-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;background:linear-gradient(135deg,var(--pink),var(--violet));
+  border-radius:100px;font-size:10px;font-weight:700;color:#fff;padding:1px 7px}
 
-    .hero { text-align: center; margin-bottom: 52px; }
-    .hero-tag {
-      display: inline-block;
-      background: var(--pink-glow); border: 1px solid rgba(255,59,122,.28);
-      border-radius: 100px; font-size: 11px; font-weight: 500;
-      color: var(--pink-light); padding: 5px 16px; margin-bottom: 18px;
-      letter-spacing: 1px; text-transform: uppercase;
-    }
-    .hero h1 {
-      font-family: var(--font-head); font-size: clamp(30px,6vw,50px);
-      font-weight: 800; line-height: 1.08; letter-spacing: -1.5px; margin-bottom: 16px;
-    }
-    .hero h1 .accent {
-      background: linear-gradient(135deg,var(--pink),var(--purple-light));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .hero p { font-size: 16px; color: var(--text-muted); max-width: 460px; margin: 0 auto; }
+.sidebar-footer{margin-top:auto;padding-top:20px;border-top:1px solid var(--border)}
+.sidebar-version{font-size:11px;color:var(--muted);text-align:center;padding:8px}
 
-    .stats {
-      display: flex; justify-content: center; gap: 32px;
-      margin-top: 24px; flex-wrap: wrap;
-    }
-    .stat { text-align: center; }
-    .stat-num {
-      font-family: var(--font-head); font-size: 22px; font-weight: 800;
-      background: linear-gradient(135deg,var(--pink),var(--purple-light));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .stat-label { font-size: 11px; color: var(--text-muted); letter-spacing: .5px; text-transform: uppercase; }
+/* ── MAIN ── */
+.main{flex:1;min-width:0;padding:0 28px 80px;max-width:900px}
 
-    .card {
-      background: var(--dark-2); border: 1px solid var(--border);
-      border-radius: 20px; padding: 28px; margin-bottom: 20px;
-    }
-    .card-title {
-      font-family: var(--font-head); font-size: 13px; font-weight: 700;
-      color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;
-    }
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:24px 0 32px;gap:16px}
+.topbar-left h2{font-family:var(--head);font-size:22px;font-weight:800;letter-spacing:-.5px}
+.topbar-left p{font-size:13px;color:var(--muted);margin-top:2px}
+.topbar-pills{display:flex;gap:8px;flex-wrap:wrap}
+.status-pill{
+  display:flex;align-items:center;gap:6px;
+  background:var(--glass-bg);border:1px solid var(--glass-border);
+  border-radius:100px;font-size:12px;color:var(--muted);padding:5px 12px;
+  backdrop-filter:blur(12px);
+}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);flex-shrink:0;
+  animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
-    label { display: block; font-size: 13px; font-weight: 500; color: var(--text-muted); margin-bottom: 8px; }
-    .form-group { margin-bottom: 20px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+/* ── GLASS CARD ── */
+.glass-card{
+  background:rgba(255,255,255,.035);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--glass-border);
+  border-radius:20px;padding:28px;
+  position:relative;overflow:hidden;
+}
+.glass-card::before{
+  content:'';position:absolute;inset:0;border-radius:inherit;
+  background:linear-gradient(135deg,rgba(255,255,255,.04) 0%,transparent 60%);
+  pointer-events:none;
+}
+.card-title{
+  font-family:var(--head);font-size:11px;font-weight:700;
+  color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:22px;
+  display:flex;align-items:center;gap:8px;
+}
+.card-title-dot{width:4px;height:4px;border-radius:50%;background:var(--pink)}
 
-    input[type="text"], select, textarea {
-      width: 100%; background: var(--dark-3); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); color: var(--text);
-      font-family: var(--font-body); font-size: 15px; padding: 12px 16px;
-      transition: border-color .2s, box-shadow .2s; appearance: none; outline: none;
-    }
-    input[type="text"]:focus, select:focus, textarea:focus {
-      border-color: rgba(255,59,122,.45);
-      box-shadow: 0 0 0 3px rgba(255,59,122,.09);
-    }
-    textarea { min-height: 80px; resize: vertical; }
-    ::placeholder { color: rgba(140,138,170,.45); }
+/* ── FORM ELEMENTS ── */
+label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:7px;letter-spacing:.3px}
+.form-group{margin-bottom:18px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
 
-    .select-wrap { position: relative; }
-    .select-wrap::after {
-      content: '▾'; position: absolute; right: 14px; top: 50%;
-      transform: translateY(-50%); color: var(--text-muted); pointer-events: none;
-    }
-    select option { background: var(--dark-3); }
+input[type="text"],select,textarea{
+  width:100%;
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--border);
+  border-radius:var(--r-sm);
+  color:var(--text);font-family:var(--body);font-size:14.5px;
+  padding:11px 15px;transition:all .2s;appearance:none;outline:none;
+}
+input[type="text"]:focus,select:focus,textarea:focus{
+  border-color:rgba(245,54,92,.4);
+  background:rgba(245,54,92,.05);
+  box-shadow:0 0 0 3px rgba(245,54,92,.08);
+}
+textarea{min-height:90px;resize:vertical;line-height:1.6}
+::placeholder{color:rgba(123,122,150,.4)}
+.select-wrap{position:relative}
+.select-wrap::after{content:'▾';position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-size:12px}
+select option{background:var(--ink3)}
 
-    .pills { display: flex; flex-wrap: wrap; gap: 8px; }
-    .pill {
-      background: var(--dark-3); border: 1px solid var(--border);
-      border-radius: 100px; color: var(--text-muted);
-      font-family: var(--font-body); font-size: 13px;
-      padding: 6px 14px; cursor: pointer; transition: all .2s; user-select: none;
-    }
-    .pill:hover { border-color: rgba(255,59,122,.35); color: var(--text); }
-    .pill.active {
-      background: var(--pink-glow); border-color: rgba(255,59,122,.5);
-      color: var(--pink-light);
-    }
+/* ── PILLS / TOGGLES ── */
+.pills{display:flex;flex-wrap:wrap;gap:7px}
+.pill{
+  background:rgba(255,255,255,.05);border:1px solid var(--border);
+  border-radius:100px;color:var(--muted);font-family:var(--body);
+  font-size:12.5px;font-weight:500;padding:6px 14px;cursor:pointer;
+  transition:all .2s;user-select:none;
+}
+.pill:hover{border-color:rgba(245,54,92,.3);color:var(--text)}
+.pill.active{
+  background:linear-gradient(135deg,rgba(245,54,92,.15),rgba(124,58,237,.12));
+  border-color:rgba(245,54,92,.45);color:var(--pink2);
+}
 
-    .btn-generate {
-      width: 100%;
-      background: linear-gradient(135deg, var(--pink), var(--purple));
-      border: none; border-radius: var(--radius); color: #fff;
-      font-family: var(--font-head); font-size: 17px; font-weight: 700;
-      padding: 16px 32px; cursor: pointer;
-      transition: opacity .2s, transform .15s; letter-spacing: .3px;
-    }
-    .btn-generate:hover { opacity: .9; }
-    .btn-generate:active { transform: scale(.98); }
+/* ── GENERATE BUTTON ── */
+.btn-generate{
+  width:100%;
+  background:linear-gradient(135deg,var(--pink),var(--violet));
+  border:none;border-radius:var(--r);color:#fff;
+  font-family:var(--head);font-size:16px;font-weight:800;
+  padding:15px 32px;cursor:pointer;
+  transition:all .2s;letter-spacing:.2px;
+  position:relative;overflow:hidden;
+  box-shadow:0 4px 24px rgba(245,54,92,.3);
+}
+.btn-generate::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.15),transparent);
+  opacity:0;transition:opacity .2s;
+}
+.btn-generate:hover{opacity:.92;transform:translateY(-1px);box-shadow:0 8px 32px rgba(245,54,92,.4)}
+.btn-generate:active{transform:scale(.98)}
+.btn-generate:hover::after{opacity:1}
 
-    .output-section { display: none; }
-    .output-section.visible { display: block; animation: fadeIn .4s ease; }
-    @keyframes fadeIn { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+/* ── OUTPUT SECTION ── */
+.output-section{display:none}
+.output-section.visible{display:block;animation:slideUp .45s cubic-bezier(.16,1,.3,1)}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 
-    .tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
-    .tab {
-      background: var(--dark-3); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); color: var(--text-muted);
-      font-family: var(--font-body); font-size: 13px; font-weight: 500;
-      padding: 7px 16px; cursor: pointer; transition: all .2s;
-    }
-    .tab:hover { color: var(--text); }
-    .tab.active {
-      background: var(--pink-glow); border-color: var(--border-pink);
-      color: var(--pink-light);
-    }
+/* ── TABS ── */
+.tabs{display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap;
+  background:rgba(255,255,255,.03);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:4px;
+}
+.tab{
+  background:transparent;border:none;border-radius:var(--r-xs);
+  color:var(--muted);font-family:var(--body);font-size:12.5px;font-weight:500;
+  padding:7px 14px;cursor:pointer;transition:all .2s;white-space:nowrap;
+}
+.tab:hover{color:var(--text)}
+.tab.active{
+  background:linear-gradient(135deg,rgba(245,54,92,.15),rgba(124,58,237,.1));
+  color:var(--pink2);font-weight:600;
+}
 
-    .idea-card {
-      background: var(--dark-2); border: 1px solid var(--border-pink);
-      border-radius: 20px; padding: 28px; margin-bottom: 16px;
-    }
-    .idea-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
-    .idea-number { font-size: 11px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
-    .idea-title { font-family: var(--font-head); font-size: 20px; font-weight: 700; line-height: 1.2; }
-    .idea-tags { display: flex; gap: 6px; flex-wrap: wrap; }
-    .idea-tag {
-      background: var(--dark-4); border-radius: 100px;
-      font-size: 11px; color: var(--text-muted); padding: 3px 10px; white-space: nowrap;
-    }
-    .idea-tag.pink { background: var(--pink-glow); color: var(--pink-light); border: 1px solid rgba(255,59,122,.2); }
+/* ── IDEA CARDS ── */
+.idea-card{
+  background:rgba(255,255,255,.035);
+  backdrop-filter:blur(16px);
+  border:1px solid var(--glass-border);
+  border-radius:18px;padding:24px;margin-bottom:14px;
+  position:relative;overflow:hidden;
+  transition:border-color .2s, box-shadow .2s;
+}
+.idea-card:hover{border-color:rgba(245,54,92,.2);box-shadow:0 4px 32px rgba(0,0,0,.3)}
+.idea-card-glow{
+  position:absolute;top:0;right:0;width:200px;height:200px;
+  background:radial-gradient(circle at top right, rgba(245,54,92,.06), transparent 70%);
+  pointer-events:none;
+}
+.idea-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:20px}
+.idea-number{font-size:10px;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:5px;font-weight:600}
+.idea-title{font-family:var(--head);font-size:20px;font-weight:800;line-height:1.2;letter-spacing:-.3px}
+.idea-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.idea-tag{
+  background:rgba(255,255,255,.06);border-radius:100px;
+  font-size:10.5px;color:var(--muted);padding:3px 10px;white-space:nowrap;font-weight:500;
+  border:1px solid var(--border);
+}
+.idea-tag.pink{background:var(--pink-glow);color:var(--pink2);border-color:rgba(245,54,92,.2)}
+.idea-tag.violet{background:rgba(124,58,237,.12);color:var(--violet2);border-color:rgba(124,58,237,.25)}
+.idea-tag.teal{background:rgba(45,212,191,.1);color:var(--teal);border-color:rgba(45,212,191,.2)}
 
-    .script-sections { display: flex; flex-direction: column; gap: 0; }
-    .script-block { padding: 16px 0; border-bottom: 1px solid var(--border); }
-    .script-block:last-child { border-bottom: none; }
-    .script-block-label {
-      font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
-      text-transform: uppercase; color: var(--pink-light); margin-bottom: 8px;
-    }
-    .script-block-text { font-size: 15px; line-height: 1.75; color: var(--text); }
-    .script-block-text em { color: var(--text-muted); font-style: italic; }
+/* ── SCRIPT SECTIONS ── */
+.script-sections{display:flex;flex-direction:column;gap:0}
+.script-block{padding:14px 0;border-bottom:1px solid var(--border)}
+.script-block:last-child{border-bottom:none}
+.script-block-label{
+  font-size:10px;font-weight:700;letter-spacing:1.3px;
+  text-transform:uppercase;color:var(--pink2);margin-bottom:8px;
+}
+.script-block-text{font-size:14.5px;line-height:1.8;color:var(--text)}
+.script-block-text em{color:var(--muted);font-style:italic}
 
-    .hooks-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-    .hook-item {
-      background: var(--dark-3); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 12px 16px;
-      font-size: 14px; line-height: 1.5; color: var(--text);
-      display: flex; align-items: flex-start; gap: 10px;
-      cursor: pointer; transition: border-color .2s;
-    }
-    .hook-item:hover { border-color: var(--border-pink); }
-    .hook-num {
-      font-family: var(--font-head); font-size: 12px; font-weight: 700;
-      color: var(--pink-light); min-width: 20px; padding-top: 1px;
-    }
+/* ── HOOK LIST ── */
+.hooks-list{list-style:none;display:flex;flex-direction:column;gap:7px}
+.hook-item{
+  background:rgba(255,255,255,.04);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:12px 15px;
+  font-size:13.5px;line-height:1.55;color:var(--text);
+  display:flex;align-items:flex-start;gap:10px;
+  cursor:pointer;transition:all .2s;
+}
+.hook-item:hover{border-color:var(--border-p);background:rgba(245,54,92,.05)}
+.hook-num{
+  font-family:var(--head);font-size:11px;font-weight:700;
+  color:var(--pink2);min-width:22px;padding-top:1px;
+}
 
-    .hashtag-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
-    .hashtag {
-      background: var(--dark-3); border: 1px solid var(--border);
-      border-radius: var(--radius-xs); font-size: 13px; color: var(--purple-light);
-      padding: 5px 12px; font-weight: 500;
-    }
+/* ── HASHTAG CLOUD ── */
+.hashtag-cloud{display:flex;flex-wrap:wrap;gap:7px}
+.hashtag{
+  background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.2);
+  border-radius:var(--r-xs);font-size:12.5px;color:var(--violet2);
+  padding:5px 11px;font-weight:500;cursor:pointer;transition:all .2s;
+}
+.hashtag:hover{background:rgba(124,58,237,.18);border-color:rgba(124,58,237,.35)}
 
-    .caption-box {
-      background: var(--dark-3); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 16px 18px;
-      font-size: 15px; line-height: 1.7; color: var(--text); font-style: italic;
-    }
+/* ── CAPTION ── */
+.caption-box{
+  background:rgba(255,255,255,.04);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:14px 17px;
+  font-size:14.5px;line-height:1.7;color:var(--text);font-style:italic;
+  cursor:pointer;transition:border-color .2s;
+}
+.caption-box:hover{border-color:var(--border-p)}
 
-    .checklist { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-    .checklist li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; line-height: 1.5; color: var(--text); }
-    .check-icon {
-      width: 20px; height: 20px; border-radius: 50%;
-      background: var(--pink-glow); border: 1px solid rgba(255,59,122,.35);
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; font-size: 10px; color: var(--pink-light); margin-top: 1px;
-    }
+/* ── CHECKLIST ── */
+.checklist{list-style:none;display:flex;flex-direction:column;gap:9px}
+.checklist li{display:flex;align-items:flex-start;gap:11px;font-size:13.5px;line-height:1.5;color:var(--text)}
+.check-icon{
+  width:20px;height:20px;border-radius:6px;
+  background:linear-gradient(135deg,rgba(245,54,92,.15),rgba(124,58,237,.12));
+  border:1px solid rgba(245,54,92,.3);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-size:9px;color:var(--pink2);margin-top:1px;font-weight:700;
+}
 
-    .output-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; }
-    .btn-action {
-      background: var(--dark-3); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); color: var(--text);
-      font-family: var(--font-body); font-size: 13px; font-weight: 500;
-      padding: 9px 18px; cursor: pointer; transition: all .2s;
-    }
-    .btn-action:hover { border-color: var(--border-pink); color: var(--pink-light); }
-    .btn-action.primary {
-      background: linear-gradient(135deg,var(--pink),var(--purple));
-      border: none; color: #fff;
-    }
-    .btn-action.primary:hover { opacity: .9; }
+/* ── VIRALITY BAR ── */
+.virality-bar{margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.virality-label{display:flex;justify-content:space-between;margin-bottom:8px}
+.virality-label span{font-size:12px;color:var(--muted);font-weight:500}
+.virality-label strong{font-size:12px;color:var(--pink2);font-weight:700}
+.bar-track{height:4px;background:rgba(255,255,255,.07);border-radius:100px;overflow:hidden}
+.bar-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--pink),var(--violet2));transition:width 1.2s cubic-bezier(.4,0,.2,1)}
 
-    .section-label {
-      font-family: var(--font-head); font-size: 13px; font-weight: 700;
-      color: var(--text-muted); text-transform: uppercase;
-      letter-spacing: 1px; margin-bottom: 14px;
-    }
+/* ── OUTPUT ACTIONS ── */
+.output-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.btn-action{
+  background:rgba(255,255,255,.05);border:1px solid var(--border);
+  border-radius:var(--r-sm);color:var(--text);font-family:var(--body);
+  font-size:12.5px;font-weight:500;padding:9px 18px;cursor:pointer;transition:all .2s;
+}
+.btn-action:hover{border-color:var(--border-p);color:var(--pink2)}
+.btn-action.primary{background:linear-gradient(135deg,var(--pink),var(--violet));border:none;color:#fff;font-weight:600}
+.btn-action.primary:hover{opacity:.9;box-shadow:0 4px 16px rgba(245,54,92,.3)}
 
-    .ideas-grid { display: flex; flex-direction: column; gap: 16px; }
+.section-label{
+  font-family:var(--head);font-size:11px;font-weight:700;
+  color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;
+}
+.ideas-grid{display:flex;flex-direction:column;gap:14px}
 
-    .virality-bar { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
-    .virality-label { display: flex; justify-content: space-between; margin-bottom: 8px; }
-    .virality-label span { font-size: 12px; color: var(--text-muted); }
-    .virality-label strong { font-size: 12px; color: var(--pink-light); }
-    .bar-track { height: 5px; background: var(--dark-4); border-radius: 100px; overflow: hidden; }
-    .bar-fill {
-      height: 100%; border-radius: 100px;
-      background: linear-gradient(90deg,var(--pink),var(--purple-light));
-      transition: width 1s cubic-bezier(.4,0,.2,1);
-    }
+/* ── BIO GENERATOR ── */
+.bio-output{
+  background:rgba(255,255,255,.04);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:18px;font-size:15px;line-height:1.75;
+  color:var(--text);cursor:pointer;transition:border-color .2s;margin-bottom:10px;
+}
+.bio-output:hover{border-color:var(--border-p)}
+.bio-variant-label{font-size:10px;font-weight:700;letter-spacing:1px;
+  text-transform:uppercase;color:var(--pink2);margin-bottom:7px}
 
-    .toast {
-      position: fixed; bottom: 30px; left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: var(--dark-4); border: 1px solid rgba(255,59,122,.3);
-      border-radius: 100px; color: var(--text); font-size: 14px; font-weight: 500;
-      padding: 10px 22px; opacity: 0; pointer-events: none;
-      transition: all .3s; z-index: 100; white-space: nowrap;
-    }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+/* ── CAPTION GENERATOR ── */
+.caption-result{
+  background:rgba(255,255,255,.04);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:16px;font-size:14.5px;line-height:1.75;
+  color:var(--text);cursor:pointer;transition:border-color .2s;margin-bottom:10px;
+}
+.caption-result:hover{border-color:var(--border-p)}
 
-    footer {
-      text-align: center; margin-top: 56px;
-      color: var(--text-muted); font-size: 13px; line-height: 1.8;
-    }
+/* ── PAGE PANELS ── */
+.page-panel{display:none}
+.page-panel.active{display:block;animation:fadeIn .35s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
-    @media (max-width: 560px) {
-      header { margin-bottom: 36px; }
-      .card { padding: 20px 18px; }
-      .form-row { grid-template-columns: 1fr; }
-      .idea-card { padding: 20px 18px; }
-      .idea-title { font-size: 17px; }
-      .stats { gap: 20px; }
-    }
-  </style>
+/* ── SECTION DIVIDER ── */
+.section-divider{
+  display:flex;align-items:center;gap:16px;margin:28px 0 22px;
+}
+.section-divider-line{flex:1;height:1px;background:var(--border)}
+.section-divider-text{font-size:11px;font-weight:700;letter-spacing:1.2px;
+  color:var(--muted);text-transform:uppercase;white-space:nowrap}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:28px;left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:rgba(21,21,30,.95);border:1px solid rgba(245,54,92,.3);
+  backdrop-filter:blur(16px);
+  border-radius:100px;color:var(--text);font-size:13px;font-weight:600;
+  padding:10px 22px;opacity:0;pointer-events:none;
+  transition:all .3s cubic-bezier(.16,1,.3,1);z-index:1000;white-space:nowrap;
+  box-shadow:0 8px 32px rgba(0,0,0,.4);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── MOBILE TOGGLE ── */
+.mobile-nav-toggle{display:none;align-items:center;gap:8px;cursor:pointer;
+  background:var(--glass-bg);border:1px solid var(--glass-border);
+  border-radius:var(--r-sm);padding:8px 14px;font-size:13px;font-weight:600;color:var(--text);
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .shell{flex-direction:column}
+  .sidebar{
+    width:100%;height:auto;position:static;
+    flex-direction:row;flex-wrap:wrap;
+    padding:16px;gap:0;
+    border-right:none;border-bottom:1px solid var(--border);
+  }
+  .sidebar-logo{border-bottom:none;margin-bottom:0;padding-bottom:0;border-right:1px solid var(--border);margin-right:12px;padding-right:12px}
+  .sidebar-footer{display:none}
+  .nav-section-label{display:none}
+  .nav-item{padding:8px 10px;margin-bottom:0;font-size:12px}
+  .nav-item .nav-icon{font-size:13px}
+  .nav-item span:not(.nav-icon):not(.nav-badge){display:none}
+  .main{padding:0 16px 60px}
+  .topbar{padding:18px 0 24px}
+  .topbar-pills{display:none}
+  .form-row,.form-row-3{grid-template-columns:1fr}
+  .glass-card{padding:18px}
+  .tabs{gap:3px}
+  .tab{font-size:12px;padding:6px 11px}
+  .idea-title{font-size:17px}
+}
+@media(max-width:480px){
+  .idea-header{flex-direction:column;gap:10px}
+}
+
+/* ── GRADIENT TEXT UTILITY ── */
+.grad{
+  background:linear-gradient(135deg,var(--pink),var(--violet2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+</style>
 </head>
 <body>
 
-<div class="bg-blob bg-blob-1"></div>
-<div class="bg-blob bg-blob-2"></div>
-<div class="bg-blob bg-blob-3"></div>
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
 
-<div class="wrapper">
+<div class="shell">
 
-  <header>
-    <div class="logo">Reel<span>Spark</span></div>
-    <div class="badge">100% Offline ✦</div>
-  </header>
-
-  <section class="hero">
-    <div class="hero-tag">✦ No API · No Login · Instant Ideas</div>
-    <h1>Your next <span class="accent">viral reel</span><br>starts here</h1>
-    <p>Pick your niche, tone, and length — get a full script template, hooks, hashtags & caption instantly.</p>
-    <div class="stats">
-      <div class="stat"><div class="stat-num">200+</div><div class="stat-label">Script Templates</div></div>
-      <div class="stat"><div class="stat-num">10</div><div class="stat-label">Niches</div></div>
-      <div class="stat"><div class="stat-num">∞</div><div class="stat-label">Combinations</div></div>
-    </div>
-  </section>
-
-  <div class="card">
-    <div class="card-title">⚙ Your Reel Details</div>
-
-    <div class="form-group">
-      <label for="keyword">Topic keyword or idea (optional)</label>
-      <input type="text" id="keyword" placeholder="e.g. meal prep, morning routine, side hustle, travel hacks…" />
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">R</div>
+      <div class="logo-text">ReelSpark</div>
     </div>
 
-    <div class="form-row">
-      <div class="form-group">
-        <label for="niche">Niche / Category</label>
-        <div class="select-wrap">
-          <select id="niche">
-            <option value="lifestyle">🌿 Lifestyle</option>
-            <option value="fitness">💪 Fitness & Health</option>
-            <option value="food">🍳 Food & Recipes</option>
-            <option value="business">💰 Business & Money</option>
-            <option value="fashion">👗 Fashion & Beauty</option>
-            <option value="travel">✈️ Travel</option>
-            <option value="tech">📱 Tech & Gadgets</option>
-            <option value="education">📚 Education</option>
-            <option value="motivation">🔥 Motivation</option>
-            <option value="comedy">😂 Comedy</option>
-          </select>
+    <div class="nav-section-label" style="margin-bottom:8px">Tools</div>
+
+    <div class="nav-item active" data-page="reel" onclick="switchPage('reel',this)">
+      <span class="nav-icon">🎬</span>
+      <span>Reel Ideas</span>
+      <span class="nav-badge">700+</span>
+    </div>
+    <div class="nav-item" data-page="caption" onclick="switchPage('caption',this)">
+      <span class="nav-icon">✍️</span>
+      <span>Caption Gen</span>
+    </div>
+    <div class="nav-item" data-page="bio" onclick="switchPage('bio',this)">
+      <span class="nav-icon">👤</span>
+      <span>Bio Generator</span>
+    </div>
+    <div class="nav-item" data-page="hashtags" onclick="switchPage('hashtags',this)">
+      <span class="nav-icon">🏷</span>
+      <span>Hashtag Pack</span>
+    </div>
+
+    <div class="nav-section-label" style="margin-top:20px;margin-bottom:8px">Info</div>
+    <div class="nav-item" style="cursor:default;opacity:.6">
+      <span class="nav-icon">⚡</span>
+      <span>100% Offline</span>
+    </div>
+    <div class="nav-item" style="cursor:default;opacity:.6">
+      <span class="nav-icon">🔒</span>
+      <span>No Login</span>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-version">ReelSpark v3.0 · Creator Toolkit</div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="main">
+
+    <div class="topbar">
+      <div class="topbar-left">
+        <h2 id="pageTitle">Reel Idea Generator</h2>
+        <p id="pageSubtitle">Pick your niche, tone & length — get a full script, hooks, hashtags & more.</p>
+      </div>
+      <div class="topbar-pills">
+        <div class="status-pill"><div class="status-dot"></div>Live & Free</div>
+        <div class="status-pill">No API ✦</div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════
+         PAGE: REEL IDEAS
+    ═════════════════════════════════════════════ -->
+    <div class="page-panel active" id="page-reel">
+      <div class="glass-card" style="margin-bottom:20px">
+        <div class="card-title"><div class="card-title-dot"></div>Reel Details</div>
+
+        <div class="form-group">
+          <label for="keyword">Topic / Keyword (optional)</label>
+          <input type="text" id="keyword" placeholder="e.g. morning routine, side hustle, luxury watch review…"/>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="niche">Niche</label>
+            <div class="select-wrap">
+              <select id="niche">
+                <option value="lifestyle">🌿 Lifestyle</option>
+                <option value="fitness">💪 Fitness & Health</option>
+                <option value="food">🍳 Food & Recipes</option>
+                <option value="business">💰 Business & Money</option>
+                <option value="fashion">👗 Fashion & Style</option>
+                <option value="travel">✈️ Travel</option>
+                <option value="tech">📱 Tech & Gadgets</option>
+                <option value="education">📚 Education</option>
+                <option value="motivation">🔥 Motivation</option>
+                <option value="comedy">😂 Comedy</option>
+                <option value="luxury">💎 Luxury Lifestyle</option>
+                <option value="cars">🚗 Cars & Automotive</option>
+                <option value="realestate">🏠 Real Estate</option>
+                <option value="photography">📷 Photography</option>
+                <option value="personalbranding">🎯 Personal Branding</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="duration">Reel Length</label>
+            <div class="select-wrap">
+              <select id="duration">
+                <option value="15">15 seconds</option>
+                <option value="30" selected>30 seconds</option>
+                <option value="60">60 seconds</option>
+                <option value="90">90 seconds</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Tone & Style</label>
+          <div class="pills" id="tones">
+            <button class="pill active" data-tone="Energetic">⚡ Energetic</button>
+            <button class="pill" data-tone="Calm">🧘 Calm</button>
+            <button class="pill" data-tone="Funny">😄 Funny</button>
+            <button class="pill" data-tone="Educational">📚 Educational</button>
+            <button class="pill" data-tone="Inspirational">🔥 Inspirational</button>
+            <button class="pill" data-tone="Story-driven">📖 Story-driven</button>
+            <button class="pill" data-tone="Bold">💥 Bold</button>
+            <button class="pill" data-tone="Relatable">🤝 Relatable</button>
+            <button class="pill" data-tone="Aesthetic">✨ Aesthetic</button>
+            <button class="pill" data-tone="GRWM">💄 GRWM</button>
+          </div>
+        </div>
+
+        <button class="btn-generate" onclick="generate()">✦ Generate My Reel Idea</button>
+      </div>
+
+      <!-- Output -->
+      <div class="output-section" id="outputSection">
+        <div class="tabs" id="tabs">
+          <button class="tab active" data-tab="script">📝 Script</button>
+          <button class="tab" data-tab="hooks">🎣 Hooks</button>
+          <button class="tab" data-tab="hashtags">🏷 Hashtags</button>
+          <button class="tab" data-tab="caption">✍️ Caption</button>
+          <button class="tab" data-tab="checklist">✅ Checklist</button>
+          <button class="tab" data-tab="more">💡 More Ideas</button>
+        </div>
+        <div id="tab-script" class="tab-panel"></div>
+        <div id="tab-hooks" class="tab-panel" style="display:none"></div>
+        <div id="tab-hashtags" class="tab-panel" style="display:none"></div>
+        <div id="tab-caption" class="tab-panel" style="display:none"></div>
+        <div id="tab-checklist" class="tab-panel" style="display:none"></div>
+        <div id="tab-more" class="tab-panel" style="display:none"></div>
+        <div class="output-actions">
+          <button class="btn-action primary" onclick="generate()">↺ Regenerate</button>
+          <button class="btn-action" onclick="copyAll()">Copy Script</button>
+          <button class="btn-action" onclick="copyHashtags()">Copy Hashtags</button>
         </div>
       </div>
-      <div class="form-group">
-        <label for="duration">Reel Length</label>
-        <div class="select-wrap">
-          <select id="duration">
-            <option value="15">15 seconds</option>
-            <option value="30" selected>30 seconds</option>
-            <option value="60">60 seconds</option>
-            <option value="90">90 seconds</option>
-          </select>
+    </div>
+
+    <!-- ════════════════════════════════════════════
+         PAGE: CAPTION GENERATOR
+    ═════════════════════════════════════════════ -->
+    <div class="page-panel" id="page-caption">
+      <div class="glass-card" style="margin-bottom:20px">
+        <div class="card-title"><div class="card-title-dot"></div>Caption Generator</div>
+        <div class="form-group">
+          <label for="cap-topic">What is your post about?</label>
+          <textarea id="cap-topic" placeholder="e.g. showing my morning skincare routine, sharing a new business tip, before & after home renovation…"></textarea>
         </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="cap-niche">Niche</label>
+            <div class="select-wrap">
+              <select id="cap-niche">
+                <option value="lifestyle">🌿 Lifestyle</option>
+                <option value="fitness">💪 Fitness</option>
+                <option value="food">🍳 Food</option>
+                <option value="business">💰 Business</option>
+                <option value="fashion">👗 Fashion</option>
+                <option value="travel">✈️ Travel</option>
+                <option value="tech">📱 Tech</option>
+                <option value="education">📚 Education</option>
+                <option value="motivation">🔥 Motivation</option>
+                <option value="luxury">💎 Luxury</option>
+                <option value="cars">🚗 Cars</option>
+                <option value="realestate">🏠 Real Estate</option>
+                <option value="photography">📷 Photography</option>
+                <option value="personalbranding">🎯 Personal Branding</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="cap-style">Caption Style</label>
+            <div class="select-wrap">
+              <select id="cap-style">
+                <option value="engaging">🔥 Engaging & Punchy</option>
+                <option value="storytelling">📖 Storytelling</option>
+                <option value="minimal">✦ Minimal & Aesthetic</option>
+                <option value="question">❓ Question-based</option>
+                <option value="educational">📚 Educational</option>
+                <option value="luxury">💎 Luxury & Premium</option>
+                <option value="funny">😂 Funny & Relatable</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Include CTA?</label>
+          <div class="pills" id="cap-ctas">
+            <button class="pill active" data-cta="save">💾 Save this</button>
+            <button class="pill" data-cta="comment">💬 Comment below</button>
+            <button class="pill" data-cta="follow">➕ Follow</button>
+            <button class="pill" data-cta="share">🔄 Share</button>
+            <button class="pill" data-cta="link">🔗 Link in bio</button>
+            <button class="pill" data-cta="none">✕ No CTA</button>
+          </div>
+        </div>
+        <button class="btn-generate" onclick="generateCaption()">✦ Generate Captions</button>
       </div>
+      <div id="captionOutput" style="display:none;animation:fadeIn .4s ease"></div>
     </div>
 
-    <div class="form-group">
-      <label>Tone & Style</label>
-      <div class="pills" id="tones">
-        <button class="pill active" data-tone="Energetic">⚡ Energetic</button>
-        <button class="pill" data-tone="Calm">🧘 Calm</button>
-        <button class="pill" data-tone="Funny">😄 Funny</button>
-        <button class="pill" data-tone="Educational">📚 Educational</button>
-        <button class="pill" data-tone="Inspirational">🔥 Inspirational</button>
-        <button class="pill" data-tone="Story-driven">📖 Story-driven</button>
-        <button class="pill" data-tone="Bold">💥 Bold & Direct</button>
-        <button class="pill" data-tone="Relatable">🤝 Relatable</button>
+    <!-- ════════════════════════════════════════════
+         PAGE: BIO GENERATOR
+    ═════════════════════════════════════════════ -->
+    <div class="page-panel" id="page-bio">
+      <div class="glass-card" style="margin-bottom:20px">
+        <div class="card-title"><div class="card-title-dot"></div>Instagram Bio Generator</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="bio-name">Your Name / Brand</label>
+            <input type="text" id="bio-name" placeholder="e.g. Alex Carter, StyleByMia…"/>
+          </div>
+          <div class="form-group">
+            <label for="bio-niche">Your Niche</label>
+            <div class="select-wrap">
+              <select id="bio-niche">
+                <option value="lifestyle">🌿 Lifestyle</option>
+                <option value="fitness">💪 Fitness</option>
+                <option value="food">🍳 Food</option>
+                <option value="business">💰 Business / Entrepreneur</option>
+                <option value="fashion">👗 Fashion</option>
+                <option value="travel">✈️ Travel</option>
+                <option value="tech">📱 Tech</option>
+                <option value="education">📚 Education / Coach</option>
+                <option value="motivation">🔥 Motivation / Mindset</option>
+                <option value="luxury">💎 Luxury Lifestyle</option>
+                <option value="cars">🚗 Cars / Automotive</option>
+                <option value="realestate">🏠 Real Estate</option>
+                <option value="photography">📷 Photography</option>
+                <option value="personalbranding">🎯 Personal Branding</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="bio-usp">What makes you different? (optional)</label>
+          <input type="text" id="bio-usp" placeholder="e.g. ex-corporate, self-taught, 10 years experience, helped 500+ people…"/>
+        </div>
+        <div class="form-group">
+          <label for="bio-cta">Link in Bio / CTA (optional)</label>
+          <input type="text" id="bio-cta" placeholder="e.g. Free guide ↓, Book a call, Shop my looks…"/>
+        </div>
+        <div class="form-group">
+          <label>Bio Style</label>
+          <div class="pills" id="bio-styles">
+            <button class="pill active" data-style="punchy">💥 Punchy & Direct</button>
+            <button class="pill" data-style="premium">💎 Premium & Luxury</button>
+            <button class="pill" data-style="minimal">✦ Minimal</button>
+            <button class="pill" data-style="emoji">🎉 Emoji-rich</button>
+            <button class="pill" data-style="authority">🏆 Authority</button>
+            <button class="pill" data-style="story">📖 Story-led</button>
+          </div>
+        </div>
+        <button class="btn-generate" onclick="generateBio()">✦ Generate My Bio</button>
       </div>
+      <div id="bioOutput" style="display:none;animation:fadeIn .4s ease"></div>
     </div>
 
-    <button class="btn-generate" onclick="generate()">✦ Generate My Reel Ideas</button>
-  </div>
-
-  <div class="output-section" id="outputSection">
-    <div class="tabs" id="tabs">
-      <button class="tab active" data-tab="script">📝 Script</button>
-      <button class="tab" data-tab="hooks">🎣 Hooks</button>
-      <button class="tab" data-tab="hashtags">🏷 Hashtags</button>
-      <button class="tab" data-tab="caption">✍️ Caption</button>
-      <button class="tab" data-tab="checklist">✅ Checklist</button>
-      <button class="tab" data-tab="more">💡 More Ideas</button>
+    <!-- ════════════════════════════════════════════
+         PAGE: HASHTAG PACKS
+    ═════════════════════════════════════════════ -->
+    <div class="page-panel" id="page-hashtags">
+      <div class="glass-card" style="margin-bottom:20px">
+        <div class="card-title"><div class="card-title-dot"></div>Hashtag Pack Builder</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="hash-niche">Niche</label>
+            <div class="select-wrap">
+              <select id="hash-niche">
+                <option value="lifestyle">🌿 Lifestyle</option>
+                <option value="fitness">💪 Fitness</option>
+                <option value="food">🍳 Food</option>
+                <option value="business">💰 Business</option>
+                <option value="fashion">👗 Fashion</option>
+                <option value="travel">✈️ Travel</option>
+                <option value="tech">📱 Tech</option>
+                <option value="education">📚 Education</option>
+                <option value="motivation">🔥 Motivation</option>
+                <option value="comedy">😂 Comedy</option>
+                <option value="luxury">💎 Luxury</option>
+                <option value="cars">🚗 Cars</option>
+                <option value="realestate">🏠 Real Estate</option>
+                <option value="photography">📷 Photography</option>
+                <option value="personalbranding">🎯 Personal Branding</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="hash-size">Pack Size</label>
+            <div class="select-wrap">
+              <select id="hash-size">
+                <option value="15">15 tags (minimal)</option>
+                <option value="20" selected>20 tags (standard)</option>
+                <option value="30">30 tags (maximum)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Mix Strategy</label>
+          <div class="pills" id="hash-mix">
+            <button class="pill active" data-mix="balanced">⚖️ Balanced</button>
+            <button class="pill" data-mix="viral">🔥 Viral-focused</button>
+            <button class="pill" data-mix="niche">🎯 Niche-specific</button>
+            <button class="pill" data-mix="growth">📈 Growth-focused</button>
+          </div>
+        </div>
+        <button class="btn-generate" onclick="generateHashtagPack()">✦ Build My Hashtag Pack</button>
+      </div>
+      <div id="hashtagPackOutput" style="display:none;animation:fadeIn .4s ease"></div>
     </div>
 
-    <div id="tab-script" class="tab-panel"></div>
-    <div id="tab-hooks" class="tab-panel" style="display:none"></div>
-    <div id="tab-hashtags" class="tab-panel" style="display:none"></div>
-    <div id="tab-caption" class="tab-panel" style="display:none"></div>
-    <div id="tab-checklist" class="tab-panel" style="display:none"></div>
-    <div id="tab-more" class="tab-panel" style="display:none"></div>
-
-    <div class="output-actions">
-      <button class="btn-action primary" onclick="generate()">↺ Regenerate</button>
-      <button class="btn-action" onclick="copyAll()">Copy Script</button>
-      <button class="btn-action" onclick="copyHashtags()">Copy Hashtags</button>
-    </div>
-  </div>
-
-  <footer>
-    <p>ReelSpark v2.0 · Works on Vercel, offline, anywhere.</p>
-    <p style="margin-top:4px">No internet required after page loads 🚀</p>
-  </footer>
+  </main>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
+/* ─────────────────────────────────────────────────────────────
+   DATA LAYER
+───────────────────────────────────────────────────────────── */
 const NICHES = {
-  lifestyle: {
-    label: "Lifestyle",
-    topics: [
-      "morning routine that actually sticks","5 habits changing my life","my realistic daily schedule",
-      "things I stopped doing to feel better","how I reset after a bad week","simple swaps that changed everything",
-      "what no one tells you about adulting","my Sunday reset routine","cozy evening routine","small changes, big results"
-    ],
-    hooks: [
-      "POV: you finally build a routine that actually works 👇",
-      "Stop scrolling — this changed my entire day.",
-      "I wasted 2 years before I learned this…",
-      "Nobody talks about this lifestyle hack 🤫",
-      "Day in my life but make it honest.",
-      "If your mornings feel chaotic, watch this.",
-      "The one thing I wish someone told me sooner.",
-      "I tried this for 30 days. Here's what happened.",
-    ],
-    hashtags: ["#lifestyle","#dailyroutine","#selfimprovement","#morningroutine","#habitsthatwork",
-      "#lifehacks","#slowliving","#mindsetshift","#lifeadvice","#routinemotivation",
-      "#wellnessjourney","#intentionalliving","#realselfcare","#growthmindset","#dayinmylife"],
-  },
-  fitness: {
-    label: "Fitness",
-    topics: [
-      "5 moves for a stronger core","beginner workout you can do at home","how I lost the first 10 lbs",
-      "gym mistakes I made as a beginner","what I eat in a day (fitness edition)","my 20-minute morning workout",
-      "the truth about getting abs","why you're not seeing results","how to stay consistent at the gym",
-      "best exercises for busy people"
-    ],
-    hooks: [
-      "Stop doing crunches. Do THIS instead 💪",
-      "You don't need a gym. Proof 👇",
-      "I trained for 90 days. This is what changed.",
-      "The fitness advice that actually worked for me.",
-      "If you only do ONE exercise, make it this.",
-      "My before & after — and the brutal truth behind it.",
-      "Trainers don't want you to know this.",
-      "I was doing this wrong for years 😅",
-    ],
-    hashtags: ["#fitness","#workout","#gymtok","#fitnessmotivation","#homeworkout",
-      "#strengthtraining","#gymmotivation","#fitlife","#healthylifestyle","#exerciseroutine",
-      "#fitnesstips","#buildmuscle","#cardio","#beginnerfitness","#workoutroutine"],
-  },
-  food: {
-    label: "Food",
-    topics: [
-      "5-ingredient dinner anyone can make","my weekly meal prep routine","the easiest pasta of your life",
-      "what I eat to stay full all day","30-minute meals for busy nights","healthy snacks I actually crave",
-      "the sauce that goes on everything","dessert with 3 ingredients","hack to make cheap food taste gourmet",
-      "high protein lunch under 10 minutes"
-    ],
-    hooks: [
-      "This dinner takes 10 minutes and slaps 🍽️",
-      "Stop buying lunch. Make this instead.",
-      "I made this every day for a week and don't regret it.",
-      "The easiest recipe on the internet, and I stand by that.",
-      "3 ingredients. Life-changing. Seriously.",
-      "POV: you finally nail meal prep.",
-      "This sauce goes on literally everything.",
-      "Why didn't anyone teach me this sooner? 😭",
-    ],
-    hashtags: ["#foodtok","#easyrecipes","#mealprep","#cookingtips","#recipeideas",
-      "#foodie","#healthyeating","#quickmeals","#homecooking","#dinnerideas",
-      "#lunchideas","#foodhacks","#highprotein","#budgetmeals","#kitchentips"],
-  },
-  business: {
-    label: "Business",
-    topics: [
-      "how I made my first $1k online","side hustles actually worth starting",
-      "business mistakes that cost me money","how to grow on social media fast",
-      "tools every entrepreneur needs","how to price your services","my morning routine as a CEO",
-      "passive income streams that work","how to get your first client","what I'd do differently starting out"
-    ],
-    hooks: [
-      "I made $1,000 online. Here's the exact method.",
-      "The side hustle nobody is talking about yet.",
-      "Stop trading time for money. Watch this.",
-      "I wish I knew this before starting my business.",
-      "The #1 mistake new entrepreneurs make.",
-      "Here's how I went from 0 to paying clients.",
-      "Free tools that run my entire business.",
-      "Unpopular opinion: you don't need a big following to make money.",
-    ],
-    hashtags: ["#businesstips","#entrepreneur","#sidehustle","#makemoneyonline","#passiveincome",
-      "#smallbusiness","#startuptips","#growthhacking","#onlinebusiness","#workfromhome",
-      "#digitalmarketing","#contentcreator","#businessmindset","#freelance","#solopreneur"],
-  },
-  fashion: {
-    label: "Fashion",
-    topics: [
-      "outfits that always get compliments","how to look put together effortlessly","capsule wardrobe essentials",
-      "style mistakes you're probably making","affordable dupes that look expensive",
-      "how to dress for your body type","thrift flip I'm obsessed with",
-      "5 ways to style one basic piece","seasonal wardrobe refresh","glow up with styling tricks"
-    ],
-    hooks: [
-      "The outfit formula that always works 🖤",
-      "You don't need more clothes. You need these tricks.",
-      "I thrifted this for £3. Let me style it.",
-      "Nobody dresses like this anymore — and that's why I do.",
-      "Style tip that immediately levels up any outfit.",
-      "The pieces in my wardrobe I wear on repeat.",
-      "How I look expensive on a budget.",
-      "POV: you finally crack your personal style.",
-    ],
-    hashtags: ["#fashiontok","#ootd","#styleinspo","#outfitideas","#capsulewardrobe",
-      "#fashionhacks","#thriftflip","#aestheticoutfit","#streetstyle","#whatiwore",
-      "#outfitinspiration","#fashionadvice","#styletips","#lookbook","#affordablefashion"],
-  },
-  travel: {
-    label: "Travel",
-    topics: [
-      "hidden gems in my favourite destination","how I travel for cheap","solo travel tips for beginners",
-      "things nobody tells you about travelling","best packing hacks I swear by",
-      "my honest travel review","budget trip under £500","travel mistakes to avoid",
-      "underrated European cities","how to find cheap flights"
-    ],
-    hooks: [
-      "This place should be on everyone's bucket list. Seriously.",
-      "I spent £50 a day — here's how.",
-      "Nobody talks about this travel hack 🤫",
-      "The most underrated city in Europe and I'm tired of keeping it secret.",
-      "First time travelling solo? Watch this first.",
-      "I've been to 30 countries. These are my packing rules.",
-      "Red flags that a trip is about to go wrong.",
-      "Pack this. Not that. Trust me.",
-    ],
-    hashtags: ["#traveltok","#travelinspo","#budgettravel","#solotravel","#traveladvice",
-      "#wanderlust","#travelhacks","#travelreels","#hiddengems","#backpacking",
-      "#traveltips","#travelwithme","#explorewithme","#worldtravel","#travellife"],
-  },
-  tech: {
-    label: "Tech",
-    topics: [
-      "apps that will change how you work","AI tools saving me hours every week",
-      "tech setup tour","the best free tools nobody uses","how I use Notion to organise my life",
-      "phone settings you need to change now","best productivity apps of the year",
-      "tech mistake costing you time","how I use AI to do more","browser extensions I can't live without"
-    ],
-    hooks: [
-      "Delete that app. Use this free one instead.",
-      "The AI tool everyone will be using in 6 months.",
-      "I gave myself 1 hour to try this app. Mind blown.",
-      "Your phone has a hidden feature you've never used.",
-      "Stop wasting time. These tools do it for you.",
-      "Tech that actually pays for itself.",
-      "I saved 10 hours this week using these apps.",
-      "This is how smart people use their phones.",
-    ],
-    hashtags: ["#techtok","#productivity","#aitools","#techreview","#productivityhacks",
-      "#appoftheday","#digitalnomad","#techadvice","#automation","#lifehacks",
-      "#worksmarter","#techsetup","#bestapps","#softwaretools","#techhacks"],
-  },
-  education: {
-    label: "Education",
-    topics: [
-      "learn any skill faster with this method","the Feynman technique explained","how to study smarter not harder",
-      "things schools never taught you","how memory actually works","speed reading tips that work",
-      "the best free online courses","how I passed an exam in 30 days",
-      "why you forget everything you study","the science of building habits"
-    ],
-    hooks: [
-      "The study method top students swear by.",
-      "You don't have a bad memory. You have bad technique.",
-      "Learned more in 30 days than in a semester. Here's how.",
-      "This is why you forget everything you read.",
-      "School won't teach you this. I will.",
-      "The skill that makes every other skill easier.",
-      "One book changed how I learn everything.",
-      "Learn anything twice as fast with this trick.",
-    ],
-    hashtags: ["#edutok","#learnontiktok","#studytips","#knowledgequotes","#selflearning",
-      "#studymotivation","#education","#learnsomethingtoday","#studyhacks","#mindset",
-      "#learneveryday","#studywithme","#criticalthinking","#lifelonglearning","#studyinspo"],
-  },
-  motivation: {
-    label: "Motivation",
-    topics: [
-      "this is your sign to start","what's holding you back isn't what you think",
-      "why most people give up too early","the mindset shift that changes everything",
-      "things I tell myself every morning","you're closer than you think",
-      "hard truths that will set you free","how to stop procrastinating for good",
-      "discipline over motivation","building confidence from zero"
-    ],
-    hooks: [
-      "This is the push you've been waiting for.",
-      "Stop waiting for the right moment. It's now.",
-      "The brutal truth about why you're not where you want to be.",
-      "You're not lazy. You're just stuck. Here's how to get unstuck.",
-      "One mindset shift that changed my entire trajectory.",
-      "The most successful people all share this one trait.",
-      "I don't believe in motivation. I believe in this instead.",
-      "Hard truths that made me better. You're welcome. 💯",
-    ],
-    hashtags: ["#motivation","#mindset","#inspiration","#growthmindset","#selfimprovement",
-      "#discipline","#positivethinking","#successmindset","#dailymotivation","#levelup",
-      "#motivationquotes","#mindsetcoach","#personaldevelopment","#goaldigger","#hustle"],
-  },
-  comedy: {
-    label: "Comedy",
-    topics: [
-      "things only overthinkers understand","when adulting hits different",
-      "types of people at the gym","honest review of my own decisions",
-      "a day in my life but make it chaotic","things I say vs things I mean",
-      "every group project ever","the stages of a relatable experience",
-      "red flags I ignored","me trying to adult"
-    ],
-    hooks: [
-      "POV: you're me at 7am trying to function 😭",
-      "I can't be the only one who does this…",
-      "Tell me you're a perfectionist without telling me.",
-      "The audacity. The AUDACITY.",
-      "Why is this so accurate it hurts 💀",
-      "Nobody is safe from this video.",
-      "Rating my own life choices and it's not going well.",
-      "This will either make you laugh or feel attacked. Or both.",
-    ],
-    hashtags: ["#comedy","#relatable","#funny","#humor","#pov",
-      "#lol","#comedytok","#funnyvideos","#trends","#skit",
-      "#adultinghumor","#realtalk","#funnymoments","#laughing","#dontjudgeme"],
-  },
+  lifestyle:{label:"Lifestyle",topics:["morning routine that actually sticks","5 habits changing my life","my realistic daily schedule","things I stopped doing to feel better","how I reset after a bad week","simple swaps that changed everything","what no one tells you about adulting","my Sunday reset routine","cozy evening routine","small changes, big results","my slow morning ritual","how I designed my dream life","the 5-item rule that cleared my clutter","my digital detox experience","how I learned to say no","things I do before 8am","my week in review routine","how I built a life I love","daily non-negotiables","how I stopped living on autopilot"],
+  hooks:["POV: you finally build a routine that actually works 👇","Stop scrolling — this changed my entire day.","I wasted 2 years before I learned this…","Nobody talks about this lifestyle hack 🤫","Day in my life but make it honest.","If your mornings feel chaotic, watch this.","The one thing I wish someone told me sooner.","I tried this for 30 days. Here's what happened.","The habit I added that changed everything.","Quiet life. Big results. Let me show you.","This is what discipline actually looks like.","I don't hustle hard. I live intentionally. Here's the difference."],
+  hashtags:["#lifestyle","#dailyroutine","#selfimprovement","#morningroutine","#habitsthatwork","#lifehacks","#slowliving","#mindsetshift","#lifeadvice","#routinemotivation","#wellnessjourney","#intentionalliving","#realselfcare","#growthmindset","#dayinmylife","#softlife","#lifestylecheck","#consciousliving","#habitbuilding","#lifestyleinspo","#selfcareroutine","#dailyhabits","#morningmotivation","#calmlife","#livingwell"]},
+
+  fitness:{label:"Fitness",topics:["5 moves for a stronger core","beginner workout you can do at home","how I lost the first 10 lbs","gym mistakes I made as a beginner","what I eat in a day (fitness edition)","my 20-minute morning workout","the truth about getting abs","why you're not seeing results","how to stay consistent at the gym","best exercises for busy people","my full body workout routine","3 underrated exercises","how I train for aesthetics not performance","my supplement stack & honest review","how I stay fit while travelling","the workout that actually changed my physique","progressive overload explained simply","my cutting phase diet","how to train with limited time","what I'd tell my beginner self"],
+  hooks:["Stop doing crunches. Do THIS instead 💪","You don't need a gym. Proof 👇","I trained for 90 days. This is what changed.","The fitness advice that actually worked for me.","If you only do ONE exercise, make it this.","My before & after — and the brutal truth behind it.","Trainers don't want you to know this.","I was doing this wrong for years 😅","The 20-minute workout that beats a 1-hour one.","Nobody talks about this training method.","I gained 5kg of muscle doing exactly this.","Quiet warning: this exercise is destroying your joints."],
+  hashtags:["#fitness","#workout","#gymtok","#fitnessmotivation","#homeworkout","#strengthtraining","#gymmotivation","#fitlife","#healthylifestyle","#exerciseroutine","#fitnesstips","#buildmuscle","#cardio","#beginnerfitness","#workoutroutine","#physique","#gymbody","#leanmuscle","#workoutideas","#trainingday","#fitcheck","#gymrats","#musclebuilding","#fitnessjourney","#getfit"]},
+
+  food:{label:"Food",topics:["5-ingredient dinner anyone can make","my weekly meal prep routine","the easiest pasta of your life","what I eat to stay full all day","30-minute meals for busy nights","healthy snacks I actually crave","the sauce that goes on everything","dessert with 3 ingredients","hack to make cheap food taste gourmet","high protein lunch under 10 minutes","my favourite 5-minute breakfast","the meal I make every Sunday","my honest meal prep fails","budget meals that actually taste good","how I eat healthy without being boring","the soup I make every winter","my one-pan dinner formula","what a nutritionist actually eats","my healthy comfort food swaps","5 ways to use leftover rice"],
+  hooks:["This dinner takes 10 minutes and slaps 🍽️","Stop buying lunch. Make this instead.","I made this every day for a week and don't regret it.","The easiest recipe on the internet, and I stand by that.","3 ingredients. Life-changing. Seriously.","POV: you finally nail meal prep.","This sauce goes on literally everything.","Why didn't anyone teach me this sooner? 😭","Zero culinary skill. Still incredible. Here's how.","This recipe gets more saves than any post I've made.","The meal I make when I don't feel like cooking.","Gordon Ramsay hates this shortcut. My family loves it."],
+  hashtags:["#foodtok","#easyrecipes","#mealprep","#cookingtips","#recipeideas","#foodie","#healthyeating","#quickmeals","#homecooking","#dinnerideas","#lunchideas","#foodhacks","#highprotein","#budgetmeals","#kitchentips","#foodlover","#mealinspo","#cookingathome","#recipeoftheday","#weeknightdinner","#foodreels","#healthyrecipes","#mealideas","#tasty","#foodtiktok"]},
+
+  business:{label:"Business",topics:["how I made my first $1k online","side hustles actually worth starting","business mistakes that cost me money","how to grow on social media fast","tools every entrepreneur needs","how to price your services","my morning routine as a CEO","passive income streams that work","how to get your first client","what I'd do differently starting out","how I built a 6-figure business alone","the DM script that closes clients","my content strategy as a creator","how I manage my time as a founder","the truth about passive income","tools that run my business for free","how I quit my 9-5 in 12 months","the offer that made me $10k","how I grew from 0 to 10k followers","the business books that changed everything"],
+  hooks:["I made $1,000 online. Here's the exact method.","The side hustle nobody is talking about yet.","Stop trading time for money. Watch this.","I wish I knew this before starting my business.","The #1 mistake new entrepreneurs make.","Here's how I went from 0 to paying clients.","Free tools that run my entire business.","Unpopular opinion: you don't need a big following to make money.","The business truth nobody wants to say out loud.","I replaced my salary in 6 months. Here's the actual breakdown.","3 income streams I built in my spare bedroom.","The moment my business clicked — and why it took so long."],
+  hashtags:["#businesstips","#entrepreneur","#sidehustle","#makemoneyonline","#passiveincome","#smallbusiness","#startuptips","#growthhacking","#onlinebusiness","#workfromhome","#digitalmarketing","#contentcreator","#businessmindset","#freelance","#solopreneur","#founderlife","#businessgrowth","#ecommerce","#creatoreconony","#businessadvice","#marketing","#buildingabusiness","#entrepreneurmindset","#startup","#b2b"]},
+
+  fashion:{label:"Fashion",topics:["outfits that always get compliments","how to look put together effortlessly","capsule wardrobe essentials","style mistakes you're probably making","affordable dupes that look expensive","how to dress for your body type","thrift flip I'm obsessed with","5 ways to style one basic piece","seasonal wardrobe refresh","glow up with styling tricks","the 10-item wardrobe challenge","my honest luxury item review","how I dress for confidence","dressing your age vs dressing your vibe","the outfit formula I use every day","what I wore this week","how to look expensive on £50","the styling trick that elevates everything","my favourite high street buys","how I thrifted a full designer-looking outfit"],
+  hooks:["The outfit formula that always works 🖤","You don't need more clothes. You need these tricks.","I thrifted this for £3. Let me style it.","Nobody dresses like this anymore — and that's why I do.","Style tip that immediately levels up any outfit.","The pieces in my wardrobe I wear on repeat.","How I look expensive on a budget.","POV: you finally crack your personal style.","Warning: this capsule wardrobe is dangerously simple.","The fashion advice that sounds wrong but isn't.","I dressed the same for 30 days. Here's what I learned.","Your wardrobe isn't the problem. Your strategy is."],
+  hashtags:["#fashiontok","#ootd","#styleinspo","#outfitideas","#capsulewardrobe","#fashionhacks","#thriftflip","#aestheticoutfit","#streetstyle","#whatiwore","#outfitinspiration","#fashionadvice","#styletips","#lookbook","#affordablefashion","#fashionreels","#stylecheck","#outfitcheck","#wearit","#fashionlovers","#womensfashion","#mensstyle","#fashionista","#outfitoftheday","#highstreet"]},
+
+  travel:{label:"Travel",topics:["hidden gems in my favourite destination","how I travel for cheap","solo travel tips for beginners","things nobody tells you about travelling","best packing hacks I swear by","my honest travel review","budget trip under £500","travel mistakes to avoid","underrated European cities","how to find cheap flights","how I slow travelled for 3 months","the most beautiful place I've ever been","travel essentials I never leave without","how I work while travelling","the trip that changed me","solo female travel safety tips","what I wish I knew before backpacking","travel apps that saved my trips","why I travel light (under 10kg)","the most underrated country in Europe"],
+  hooks:["This place should be on everyone's bucket list. Seriously.","I spent £50 a day — here's how.","Nobody talks about this travel hack 🤫","The most underrated city in Europe and I'm tired of keeping it secret.","First time travelling solo? Watch this first.","I've been to 30 countries. These are my packing rules.","Red flags that a trip is about to go wrong.","Pack this. Not that. Trust me.","I booked a trip on £300 total. Full breakdown.","This destination changed how I see the world.","The travel mistake that cost me €500.","I got stranded. Here's what saved me."],
+  hashtags:["#traveltok","#travelinspo","#budgettravel","#solotravel","#traveladvice","#wanderlust","#travelhacks","#travelreels","#hiddengems","#backpacking","#traveltips","#travelwithme","#explorewithme","#worldtravel","#travellife","#travelgram","#digitalnomad","#slowtravel","#travelvlog","#traveleurope","#adventuretravel","#travelcommunity","#backpacker","#travelcouple","#solobackpacker"]},
+
+  tech:{label:"Tech",topics:["apps that will change how you work","AI tools saving me hours every week","tech setup tour","the best free tools nobody uses","how I use Notion to organise my life","phone settings you need to change now","best productivity apps of the year","tech mistake costing you time","how I use AI to do more","browser extensions I can't live without","my home office setup tour","the AI tool replacing expensive software","how I automated my entire business","my honest review of the latest tech","tools I regret buying vs ones I love","my minimalist tech setup","the app I use every single day","how to use ChatGPT for content creation","the setup that makes me 3x more productive","tech you need if you work from home"],
+  hooks:["Delete that app. Use this free one instead.","The AI tool everyone will be using in 6 months.","I gave myself 1 hour to try this app. Mind blown.","Your phone has a hidden feature you've never used.","Stop wasting time. These tools do it for you.","Tech that actually pays for itself.","I saved 10 hours this week using these apps.","This is how smart people use their phones.","The setup that made me stop procrastinating.","This free tool does what the £99/month one does.","I replaced 5 apps with this one.","The AI workflow that runs while I sleep."],
+  hashtags:["#techtok","#productivity","#aitools","#techreview","#productivityhacks","#appoftheday","#digitalnomad","#techadvice","#automation","#lifehacks","#worksmarter","#techsetup","#bestapps","#softwaretools","#techhacks","#aicontent","#techlife","#gadgets","#homeoffice","#techsetup","#workfromhome","#techchannel","#techcreator","#productivitytools","#nocode"]},
+
+  education:{label:"Education",topics:["learn any skill faster with this method","the Feynman technique explained","how to study smarter not harder","things schools never taught you","how memory actually works","speed reading tips that work","the best free online courses","how I passed an exam in 30 days","why you forget everything you study","the science of building habits","how I learned a language in 90 days","the 5-hour rule high performers use","the best books to read in your 20s","how to actually use what you learn","the learning method used by top performers","skills worth learning in 2025","how I self-studied to a new career","the book that changed how I think","how to absorb information faster","what elite students do differently"],
+  hooks:["The study method top students swear by.","You don't have a bad memory. You have bad technique.","Learned more in 30 days than in a semester. Here's how.","This is why you forget everything you read.","School won't teach you this. I will.","The skill that makes every other skill easier.","One book changed how I learn everything.","Learn anything twice as fast with this trick.","The learning hack that saved my degree.","Most people learn inefficiently. Here's the fix.","I retrained my brain using this technique. It works.","The thing gifted people do that others don't."],
+  hashtags:["#edutok","#learnontiktok","#studytips","#knowledgequotes","#selflearning","#studymotivation","#education","#learnsomethingtoday","#studyhacks","#mindset","#learneveryday","#studywithme","#criticalthinking","#lifelonglearning","#studyinspo","#learningtips","#studentlife","#knowledgeipower","#onlinelearning","#coursera","#selfstudying","#studyaesthetic","#readdaily","#booksthatchangedme","#studyhard"]},
+
+  motivation:{label:"Motivation",topics:["this is your sign to start","what's holding you back isn't what you think","why most people give up too early","the mindset shift that changes everything","things I tell myself every morning","you're closer than you think","hard truths that will set you free","how to stop procrastinating for good","discipline over motivation","building confidence from zero","the day I decided to stop playing small","what changed when I stopped caring what people think","why average is a trap","the 1% rule that improved my whole year","how I stay disciplined when I don't feel like it","what I wish I started 5 years earlier","the truth about overnight success","how to silence self-doubt","the letter I'd write to my past self","why your excuses are costing you everything"],
+  hooks:["This is the push you've been waiting for.","Stop waiting for the right moment. It's now.","The brutal truth about why you're not where you want to be.","You're not lazy. You're just stuck. Here's how to get unstuck.","One mindset shift that changed my entire trajectory.","The most successful people all share this one trait.","I don't believe in motivation. I believe in this instead.","Hard truths that made me better. You're welcome. 💯","The day I stopped making excuses, everything changed.","The thing holding you back isn't what you think it is.","Nobody's coming to save you. Here's what to do instead.","This is what discipline looks like when nobody's watching."],
+  hashtags:["#motivation","#mindset","#inspiration","#growthmindset","#selfimprovement","#discipline","#positivethinking","#successmindset","#dailymotivation","#levelup","#motivationquotes","#mindsetcoach","#personaldevelopment","#goaldigger","#hustle","#nevergiveup","#believeinyourself","#success","#motivationalquotes","#hardwork","#ambition","#grindset","#mindsetmatters","#becomeyourbestself","#doitscared"]},
+
+  comedy:{label:"Comedy",topics:["things only overthinkers understand","when adulting hits different","types of people at the gym","honest review of my own decisions","a day in my life but make it chaotic","things I say vs things I mean","every group project ever","the stages of a relatable experience","red flags I ignored","me trying to adult","the audacity of people in my life","how I react vs how I should react","telling my mum about my job again","the lies I tell myself","things I do at 2am that I regret","me vs my body","overthinking a text for 45 minutes","being the friend that is always late","having a whole personality about coffee","my inner monologue during a first date"],
+  hooks:["POV: you're me at 7am trying to function 😭","I can't be the only one who does this…","Tell me you're a perfectionist without telling me.","The audacity. The AUDACITY.","Why is this so accurate it hurts 💀","Nobody is safe from this video.","Rating my own life choices and it's not going well.","This will either make you laugh or feel attacked. Or both.","The accuracy of this is genuinely unsettling.","Me every time I try to be a functioning adult.","The internal monologue nobody asked for but everyone needed.","Presenting: my worst decisions, ranked."],
+  hashtags:["#comedy","#relatable","#funny","#humor","#pov","#lol","#comedytok","#funnyvideos","#trends","#skit","#adultinghumor","#realtalk","#funnymoments","#laughing","#dontjudgeme","#comedyreels","#funnymemes","#relatablecontent","#overthinking","#adultingishard","#funnyordie","#comedicrelief","#humorpage","#weekendvibes","#fridaymood"]},
+
+  luxury:{label:"Luxury",topics:["my honest review of a luxury hotel","things worth spending money on","the luxury item I saved up for","inside the world's most exclusive club","a day living like the ultra wealthy","luxury vs premium — the real difference","the designer bag that's actually worth it","first class flight experience","my Michelin star restaurant visit","things rich people do that broke people don't","what old money actually looks like","the investment pieces I'd buy again","my private member's club review","how I upgraded my life without going broke","the experience that money can't buy","what separates luxury from expensive","the quiet luxury aesthetic explained","my 5-star hotel honest review","things I noticed at a Ritz Carlton","a tour of a £5M penthouse"],
+  hooks:["What €20,000 a night actually gets you.","Old money doesn't look like what you think.","The luxury item I regret buying — and the one I don't.","Inside the most exclusive place I've ever been.","The real difference between expensive and luxury.","I spent a week living like the 1%. Here's what I learned.","The quiet luxury aesthetic, decoded.","This is what it actually costs to live this lifestyle.","Rich people don't buy this. Here's what they buy instead.","The luxury experience nobody talks about.","What a Michelin star meal actually feels like.","Real wealth looks nothing like Instagram shows you."],
+  hashtags:["#luxury","#luxurylifestyle","#luxuryliving","#highend","#premiumlifestyle","#oldmoney","#quietluxury","#luxurytravel","#luxurycars","#wealthymindset","#affluent","#luxuryreels","#luxuryhotels","#designerfashion","#luxurybrand","#elitelifestyle","#richaesthetics","#milliondollar","#premiumquality","#luxuryhomes","#fivestar","#luxuryfood","#exclusivelifestyle","#highclass","#luxurylife"]},
+
+  cars:{label:"Cars",topics:["honest review of my daily driver","the car I bought vs what I expected","supercar I rented for the weekend","the most underrated car nobody buys","hidden features most owners don't know about","the £10k budget car that outperforms everything","my honest McLaren/Porsche/BMW review","the car that changed how I drive","ev vs petrol — after 12 months","the car costs nobody talks about","things I wish I knew before buying a car","inside a dealership: what they don't tell you","the used car that's actually a bargain","my first supercar experience","track day review","the car resale truth","what I drive vs what I can afford","sports car vs luxury saloon — which makes sense","the modification that transformed my car","things every car owner should know"],
+  hooks:["Nobody talks about how much this car actually costs to own.","I rented a Porsche for a weekend. Worth it?","The most underrated car on the market and it's hiding in plain sight.","This £8,000 car beats cars costing three times as much.","I took a supercar to a track. Here's what happened.","The car review nobody on YouTube is making.","First drive: the car everyone is getting wrong.","The hidden cost of owning a dream car. Brutal breakdown.","This modification changed how my car drives completely.","What car dealers never tell you at the showroom.","EV for 12 months. Honest verdict — no agenda.","The used car that's actually a genius buy right now."],
+  hashtags:["#cars","#cartok","#carsofinstagram","#carreview","#supercar","#carlovers","#automotive","#carphotography","#exoticcars","#carbuild","#carcommunity","#carenthusiast","#luxurycars","#newcar","#usedcar","#evcar","#electriccar","#cardealership","#carmod","#trackday","#porsche","#bmw","#mercedes","#carlifestyle","#drivemore"]},
+
+  realestate:{label:"Real Estate",topics:["how I bought my first property at 25","the property investment nobody talks about","things to check before you buy a house","how I make money from property without owning it","the renovation that added £50k to a property","buy to let: honest numbers after 2 years","mistakes first-time buyers make","the neighbourhood I'd invest in right now","how to spot a good property deal","property hacks that save thousands","how I turned a £5k budget into a property portfolio","understanding the real cost of ownership","the property type most investors overlook","off-market property strategies","how to make money from property in 2025","what estate agents don't tell buyers","the planning permission secret","conveyancing explained simply","my HMO property honest review","how I increased a property's value for under £10k"],
+  hooks:["I bought a property at 25 with no deposit. Here's exactly how.","The property strategy nobody is teaching online.","This neighbourhood will double in value. My reasoning.","What estate agents don't tell first-time buyers.","I increased this property's value by £40k for under £10k spent.","The real cost of buying a house — nobody breaks this down honestly.","Buy to let in 2025: the actual numbers.","The property type I'd buy right now if I was starting over.","First home buyer mistakes that cost people thousands.","I toured a £2M property. Here's what they're actually selling.","The planning permission trick that adds value overnight.","Off-market property deals exist. Here's how to find them."],
+  hashtags:["#realestate","#property","#propertyinvesting","#firsttimebuyer","#propertytips","#realestateinvesting","#buytolet","#propertymarket","#househunting","#mortgageadvice","#propertyportfolio","#realestatereels","#houseflipping","#propertyinvestment","#ukproperty","#housetour","#newbuild","#realestatetips","#landlord","#propertyadvice","#investinproperty","#rentalincome","#housingmarket","#realestateagent","#homebuyer"]},
+
+  photography:{label:"Photography",topics:["the camera settings I use for everything","how I edit photos in 5 minutes","the lens that changed my photography","photography mistakes beginners make","how I get that cinematic look","my honest camera review","the free editing preset I use","street photography tips","how to shoot in harsh light","golden hour photography guide","the composition rule that improves every photo","how I shoot portraits with no studio","my gear bag tour (honest cost)","the editing style I spent a year developing","how to make iPhone photos look professional","the photography niche that actually makes money","black and white photography tips","how I got my first client as a photographer","the camera I'd buy if I was starting over","how I built a photography following"],
+  hooks:["The camera setting most photographers ignore.","One composition rule. Instantly better photos.","I shot this on a phone. Here's how it fooled everyone.","The editing step that makes photos look cinematic.","The beginner photography mistake I still see everywhere.","My photos changed completely when I learned this.","The lens nobody talks about but everyone needs.","This is why your photos don't look like the professionals.","Harsh light? This is how you use it, not avoid it.","The free Lightroom preset I use on everything.","How I shot a paid campaign with a £500 camera.","Photography advice that sounds wrong but transforms your shots."],
+  hashtags:["#photography","#photographer","#photoreels","#photographytips","#photoediting","#lightroom","#cameratalk","#portraitphotography","#landscapephotography","#streetphotography","#cameragear","#photographyadvice","#filmphoto","#canonphotography","#sonyphotography","#photovideo","#editingpreset","#photographylife","#cameralens","#photographylovers","#contentcreator","#photoshoot","#photographyislife","#visualstorytelling","#shotoniphone"]},
+
+  personalbranding:{label:"Personal Branding",topics:["how I built my personal brand from scratch","the content strategy that grew me to 10k","things you need on your Instagram profile","how to position yourself as an expert","my honest journey from 0 to paid creator","the niche I chose and why","building authority without a huge following","how I got brand deals as a small creator","my content pillars explained","what personal branding actually means","the profile mistakes keeping you small","how I got 1000 true fans","the DM strategy that gets replies","creating content people actually share","my posting schedule and why it works","how to monetise under 5k followers","the story that built my following","the one change that doubled my engagement","how I turned followers into clients","building a brand with no budget"],
+  hooks:["Your personal brand is making the wrong impression. Here's proof.","I grew to 10k followers doing one thing differently.","The profile mistake 90% of creators are making right now.","Nobody nods when you say your niche. This is why.","I landed a brand deal at 2k followers. Here's the pitch.","The content pillar strategy that built my brand.","You don't need to go viral. You need to do this instead.","The brand story that made people actually follow me.","How I turned 500 followers into £5k in 30 days.","Your content isn't the problem. Your positioning is.","The DM script that gets brand deal replies.","This one Instagram change tripled my profile visits."],
+  hashtags:["#personalbrand","#personalbranding","#contentcreator","#creatortips","#instagramgrowth","#contentmarketing","#socialmediatips","#buildyourbrand","#creatoreconomy","#influencermarketing","#contentcreation","#brandbuilding","#socialmediastrategy","#growyourbusiness","#instagramtips","#ugccreator","#contentplan","#buildingacommunity","#monetise","#creatorcoach","#nichemarketing","#thought leader","#authoritybuilding","#attractionmarketing","#brandstrategy"]}
 };
 
 const TEMPLATES = {
-  Energetic: {
-    hook:    "{HOOK}",
-    body:    "Let me break it down for you — fast.\n\n1️⃣ First, {POINT1}.\n2️⃣ Then, {POINT2}.\n3️⃣ And finally, {POINT3}.\n\nThis is the thing most people skip — and it makes ALL the difference.",
-    cta:     "Save this for later, follow for more {NICHE} content, and drop a 🔥 if this was helpful!",
-    caption: "The {NICHE} content you didn't know you needed 🔥 Save this!",
-    virality: 88,
-  },
-  Calm: {
-    hook:    "{HOOK}",
-    body:    "Here's what I've learned after a long time of doing this wrong…\n\nFirst — {POINT1}. This sounds small, but it shifts everything.\n\nSecond — {POINT2}. Slow down, and you'll actually get there faster.\n\nAnd third — {POINT3}. That's the one nobody talks about.",
-    cta:     "If this resonated, follow along — I share more thoughtful {NICHE} content every week.",
-    caption: "Slow down. You're closer than you think ✨",
-    virality: 74,
-  },
-  Funny: {
-    hook:    "{HOOK}",
-    body:    "Scene: me, completely clueless, thinking {POINT1} was a good idea.\n\nSpoiler: it was not. 😭\n\nThen I tried {POINT2}. Still wrong. The audacity of me.\n\nFinally discovered {POINT3} and suddenly — SUDDENLY — everything clicked.\n\nI am not the same person.",
-    cta:     "Follow if you also make questionable decisions but want to improve 🙋 Drop a 💀 if you felt this.",
-    caption: "A cautionary tale. You're welcome 😂 #relatable",
-    virality: 91,
-  },
-  Educational: {
-    hook:    "{HOOK}",
-    body:    "Here's the breakdown — step by step:\n\n📌 Step 1: {POINT1}\nMost people skip this. Don't.\n\n📌 Step 2: {POINT2}\nThis is where the magic actually happens.\n\n📌 Step 3: {POINT3}\nLock this in and you're ahead of 90% of people.",
-    cta:     "Save this — you'll want to come back to it. Follow for more {NICHE} deep dives every week.",
-    caption: "Saving this = admitting you needed it 📚 No judgment.",
-    virality: 82,
-  },
-  Inspirational: {
-    hook:    "{HOOK}",
-    body:    "A year ago I had none of this figured out.\n\nBut I kept showing up. Even when it felt pointless.\n\nHere's what I learned:\n\n🔥 {POINT1} — this alone changed everything.\n🔥 {POINT2} — harder than it sounds, worth every second.\n🔥 {POINT3} — the thing I wish I started sooner.\n\nYou're not behind. You're right on time.",
-    cta:     "Share this with someone who needs it today. Follow for more real {NICHE} content.",
-    caption: "You're not behind. You're right on time 🔥",
-    virality: 85,
-  },
-  "Story-driven": {
-    hook:    "{HOOK}",
-    body:    "It started on a completely ordinary day.\n\nI was doing {POINT1} — badly, I might add — when something clicked.\n\nI realised {POINT2} and that changed the whole game for me.\n\nNow? {POINT3}. And I genuinely didn't see that coming.",
-    cta:     "If you want to hear more stories like this, follow — I share one every few days. 📖",
-    caption: "The story I wasn't going to share. Here it is anyway. 📖",
-    virality: 79,
-  },
-  Bold: {
-    hook:    "{HOOK}",
-    body:    "Let's be real.\n\n❌ {POINT1} is not working for you. Stop.\n❌ {POINT2}? Also not it.\n\n✅ Here's what actually works: {POINT3}.\n\nNo fluff. No watering it down. Just the thing.",
-    cta:     "Disagree? Tell me below. If this hit — save it and follow for more no-BS {NICHE} content.",
-    caption: "Nobody wants to hear this. I'm saying it anyway. 💥",
-    virality: 93,
-  },
-  Relatable: {
-    hook:    "{HOOK}",
-    body:    "Okay, so. Be honest with yourself for a second.\n\nYou've tried {POINT1}, right? And it kind of worked but also kind of didn't?\n\nAnd then {POINT2} — ugh, same.\n\nHere's the thing: {POINT3}. That's it. That's the whole secret.\n\nWe've all been overthinking it.",
-    cta:     "Tell me in the comments if this is you 👇 Follow for content that actually gets it.",
-    caption: "It me 🙋 Except now I fixed it. Here's how.",
-    virality: 86,
-  },
+  Energetic:{hook:"{HOOK}",body:"Let me break it down — fast.\n\n1️⃣ {POINT1}.\n2️⃣ {POINT2}.\n3️⃣ {POINT3}.\n\nThis is the step most people skip — and it makes ALL the difference.",cta:"Save this, follow for more {NICHE} content, and drop a 🔥 if this helped!",caption:"The {NICHE} content you didn't know you needed 🔥",virality:88},
+  Calm:{hook:"{HOOK}",body:"Here's what I've learned after a long time doing this wrong…\n\nFirst — {POINT1}. Sounds small, but it shifts everything.\n\nSecond — {POINT2}. Slow down and you'll get there faster.\n\nAnd third — {POINT3}. That's the one nobody talks about.",cta:"If this resonated, follow — I share thoughtful {NICHE} content every week.",caption:"Slow down. You're closer than you think ✨",virality:74},
+  Funny:{hook:"{HOOK}",body:"Scene: me, completely clueless, thinking {POINT1} was a good idea.\n\nSpoiler: it was not. 😭\n\nThen I tried {POINT2}. Still wrong.\n\nFinally discovered {POINT3} and suddenly — SUDDENLY — everything clicked.\n\nI am not the same person.",cta:"Follow if you also make questionable decisions but want to improve 🙋 Drop a 💀 if you felt this.",caption:"A cautionary tale. You're welcome 😂",virality:91},
+  Educational:{hook:"{HOOK}",body:"Here's the breakdown:\n\n📌 Step 1: {POINT1}\nMost people skip this. Don't.\n\n📌 Step 2: {POINT2}\nThis is where the magic happens.\n\n📌 Step 3: {POINT3}\nLock this in and you're ahead of 90% of people.",cta:"Save this — you'll want to come back. Follow for more {NICHE} deep-dives every week.",caption:"Saving this = admitting you needed it 📚",virality:82},
+  Inspirational:{hook:"{HOOK}",body:"A year ago I had none of this figured out.\n\nBut I kept showing up. Even when it felt pointless.\n\nHere's what I learned:\n\n🔥 {POINT1} — this alone changed everything.\n🔥 {POINT2} — harder than it sounds, worth every second.\n🔥 {POINT3} — the thing I wish I started sooner.\n\nYou're not behind. You're right on time.",cta:"Share this with someone who needs it today. Follow for more {NICHE} content.",caption:"You're not behind. You're right on time 🔥",virality:85},
+  "Story-driven":{hook:"{HOOK}",body:"It started on a completely ordinary day.\n\nI was doing {POINT1} — badly, I might add — when something clicked.\n\nI realised {POINT2} and that changed the whole game.\n\nNow? {POINT3}. And I genuinely didn't see that coming.",cta:"If you want to hear more stories like this, follow — I share one every few days. 📖",caption:"The story I wasn't going to share. Here it is anyway. 📖",virality:79},
+  Bold:{hook:"{HOOK}",body:"Let's be real.\n\n❌ {POINT1} is not working for you. Stop.\n❌ {POINT2}? Also not it.\n\n✅ Here's what actually works: {POINT3}.\n\nNo fluff. No watering it down.",cta:"Disagree? Tell me below. If this hit — save it and follow for no-BS {NICHE} content.",caption:"Nobody wants to hear this. I'm saying it anyway. 💥",virality:93},
+  Relatable:{hook:"{HOOK}",body:"Okay, be honest with yourself for a second.\n\nYou've tried {POINT1}, right? Kind of worked but also kind of didn't?\n\nAnd then {POINT2} — ugh, same.\n\nHere's the thing: {POINT3}. That's it. That's the whole secret.\n\nWe've all been overthinking it.",cta:"Tell me in the comments if this is you 👇 Follow for content that actually gets it.",caption:"It me 🙋 Except now I fixed it.",virality:86},
+  Aesthetic:{hook:"{HOOK}",body:"Some things just work quietly.\n\n✦ {POINT1}\n✦ {POINT2}\n✦ {POINT3}\n\nNo noise. Just results.",cta:"Save for when you need the reminder. Follow for more curated {NICHE} content ✦",caption:"Less noise. More intention. ✦",virality:80},
+  GRWM:{hook:"{HOOK}",body:"Getting ready with me — and talking about {POINT1} while I do.\n\nBecause honestly? {POINT2}.\n\nAnd by the end of this? {POINT3}.\n\nCome along.",cta:"Comment your thoughts below 👇 And follow if you want more get-ready-with-me content!",caption:"GRWM while we talk about the important stuff 💄",virality:84}
 };
 
 const POINTS = {
-  lifestyle: [
-    ["waking up before your phone controls your morning","doing the one thing you've been avoiding","protecting your energy from drains you didn't notice"],
-    ["cutting one habit that was secretly exhausting you","building structure around what you value most","saying no more than you say yes"],
-    ["slowing down on purpose","making your environment do the work for you","tracking your mood instead of just your tasks"],
-    ["removing decisions from your morning","outsourcing what drains you","creating a shutdown ritual at the end of each day"],
-  ],
-  fitness: [
-    ["training consistency beats training intensity","compound movements outperform isolation every time","progressive overload is the actual secret"],
-    ["sleeping enough is part of your workout","nutrition is 80% of the result","rest days are productive days"],
-    ["tracking your lifts even roughly changes everything","form first, weight second — always","warm-ups aren't optional"],
-    ["short workouts you do beat perfect ones you skip","protein at every meal changes your body composition","walking more is underrated cardio"],
-  ],
-  food: [
-    ["prepping sauces and bases rather than full meals","batch cooking one carb and one protein","keeping meals to 5 ingredients or fewer"],
-    ["using acid (lemon, vinegar) to finish everything","seasoning in layers, not just at the end","letting meat rest before cutting"],
-    ["frozen vegetables are nutritionally identical to fresh","herbs and fat are the two things cheap food lacks","building flavour starts with the oil and heat"],
-    ["high-protein breakfasts reduce snacking all day","meal prepping snacks separately from meals","tasting and adjusting beats following recipes to the letter"],
-  ],
-  business: [
-    ["solving one specific problem for one specific person","showing up consistently over showing up perfectly","your first offer doesn't need to be your best offer"],
-    ["building in public is faster than building in secret","free content builds the trust that paid offers convert on","systems beat hustle every time after year one"],
-    ["pricing based on value, not hours","your network is the fastest shortcut to clients","saying no to bad-fit clients protects your good-fit ones"],
-    ["one revenue stream done well beats five done badly","email list is more valuable than social following","documenting your process is free content forever"],
-  ],
-  fashion: [
-    ["fit matters more than brand or price","neutrals are the base, one colour is the accent","tailoring a cheap piece beats buying expensive ill-fitting ones"],
-    ["shoes and bags are read before anything else","dressing for your actual lifestyle, not your aspirational one","quality basics worn often beat statement pieces worn once"],
-    ["knowing your three go-to outfit formulas removes all decision fatigue","shopping your wardrobe before shopping a store","colour repetition across an outfit makes it look intentional"],
-    ["proportion is the invisible ingredient in every good look","one bold piece per outfit — not two","tucking, rolling, and layering costs nothing but changes everything"],
-  ],
-  travel: [
-    ["booking flights on Tuesday or Wednesday for best prices","shoulder season beats peak season for crowds and cost","one-way flights often cheaper than return"],
-    ["packing half of what you think you need","having travel insurance before you need it","learning five words in the local language"],
-    ["slow travel saves money and gives richer experiences","staying in local neighbourhoods instead of tourist centres","eating where locals eat, not where the signs are in English"],
-    ["booking accommodation refundable then deciding later","keeping digital and physical copies of documents","arriving in a new city with first night pre-booked even if nowhere else"],
-  ],
-  tech: [
-    ["automating your most repeated weekly task first","using AI to draft, then editing yourself","keyboard shortcuts that save 20 minutes a day"],
-    ["having one app per category instead of five","turning off all non-essential notifications","using your calendar as a to-do list"],
-    ["batch-processing email twice a day only","cloud backups for everything you'd miss","password manager to eliminate one friction point"],
-    ["browser tab limits to focus your attention","offline mode for productivity apps when you need deep work","customising your phone's home screen to reflect your actual priorities"],
-  ],
-  education: [
-    ["spaced repetition beats re-reading every time","teaching what you learn immediately after learning it","handwriting notes for retention even in a digital world"],
-    ["learning in short blocks with breaks outperforms marathon sessions","connecting new knowledge to something you already know","asking 'how does this apply to my life' after every lesson"],
-    ["sleep is when memories are actually consolidated","active recall over passive review every single time","setting a question before you read, not after"],
-    ["Pomodoro isn't just hype — timed focus changes output","studying the night before, sleeping on it, reviewing in the morning","summarising in one sentence after every section"],
-  ],
-  motivation: [
-    ["action creates motivation, not the other way around","identity-based habits outlast goal-based ones","the gap between where you are and where you want to be is the work"],
-    ["discomfort is the price of growth — pay it or don't grow","comparing your chapter one to someone else's chapter twenty","most success is invisible work that nobody saw"],
-    ["accountability isn't weakness — it's strategy","small wins compound exactly like small losses do","the version of you that wins starts the day differently"],
-    ["done is infinitely better than perfect","your environment shapes your behaviour more than willpower does","future you is watching what present you does today"],
-  ],
-  comedy: [
-    ["confidently doing the wrong thing","having a whole plan that lasts exactly three days","overthinking a decision for a week then doing the first thing anyway"],
-    ["explaining something technical to someone who didn't ask","arriving somewhere five minutes early and calling that organised","pretending to understand something then Googling it immediately after"],
-    ["making a very reasonable plan that completely falls apart","using 'I'll do it tomorrow' as a full personality trait","having seventeen browser tabs open and adding more"],
-    ["telling yourself 'just five more minutes'","spending more time researching something than actually doing it","confidently giving advice on something you learnt about ten minutes ago"],
-  ],
+  lifestyle:[["waking up before your phone controls your morning","doing the one thing you've been avoiding","protecting your energy from drains you didn't notice"],["cutting one habit that was secretly exhausting you","building structure around what you value most","saying no more than you say yes"],["slowing down on purpose","making your environment do the work for you","tracking your mood instead of just your tasks"],["removing decisions from your morning","outsourcing what drains you","creating a shutdown ritual at the end of each day"],["choosing depth over speed in everything","building a life that doesn't need a holiday from itself","doing less better, not more badly"]],
+  fitness:[["training consistency beats training intensity","compound movements outperform isolation every time","progressive overload is the actual secret"],["sleeping enough is part of your workout","nutrition is 80% of the result","rest days are productive days"],["tracking your lifts even roughly changes everything","form first, weight second — always","warm-ups aren't optional"],["short workouts you do beat perfect ones you skip","protein at every meal changes your body composition","walking more is underrated cardio"],["training the mind-muscle connection, not just the weight","eating in a slight surplus to actually build muscle","deload weeks are when growth happens"]],
+  food:[["prepping sauces and bases rather than full meals","batch cooking one carb and one protein","keeping meals to 5 ingredients or fewer"],["using acid (lemon, vinegar) to finish everything","seasoning in layers, not just at the end","letting meat rest before cutting"],["frozen vegetables are nutritionally identical to fresh","herbs and fat are the two things cheap food lacks","building flavour starts with the oil and heat"],["high-protein breakfasts reduce snacking all day","meal prepping snacks separately from meals","tasting and adjusting beats following recipes to the letter"],["using pasta water to bind and thicken sauces","dry-brining your protein an hour before cooking","finishing a pan sauce with cold butter off the heat"]],
+  business:[["solving one specific problem for one specific person","showing up consistently over showing up perfectly","your first offer doesn't need to be your best offer"],["building in public is faster than building in secret","free content builds the trust that paid offers convert on","systems beat hustle every time after year one"],["pricing based on value, not hours","your network is the fastest shortcut to clients","saying no to bad-fit clients protects your good-fit ones"],["one revenue stream done well beats five done badly","email list is more valuable than social following","documenting your process is free content forever"],["reverse engineering from your end goal, not your starting point","making your process the product, not just the outcome","charging for transformation, not information"]],
+  fashion:[["fit matters more than brand or price","neutrals are the base, one colour is the accent","tailoring a cheap piece beats buying expensive ill-fitting ones"],["shoes and bags are read before anything else","dressing for your actual lifestyle, not your aspirational one","quality basics worn often beat statement pieces worn once"],["knowing your three go-to outfit formulas removes all decision fatigue","shopping your wardrobe before shopping a store","colour repetition across an outfit makes it look intentional"],["proportion is the invisible ingredient in every good look","one bold piece per outfit — not two","tucking, rolling, and layering costs nothing but changes everything"],["buying vintage for the pieces everyone else wants new","understanding what your body actually wants to wear","dressing for the life you have, not the one you want"]],
+  travel:[["booking flights on Tuesday or Wednesday for best prices","shoulder season beats peak season for crowds and cost","one-way flights often cheaper than return"],["packing half of what you think you need","having travel insurance before you need it","learning five words in the local language"],["slow travel saves money and gives richer experiences","staying in local neighbourhoods instead of tourist centres","eating where locals eat, not where the signs are in English"],["booking accommodation refundable then deciding later","keeping digital and physical copies of documents","arriving in a new city with first night pre-booked even if nowhere else"],["Google Maps offline saves you more times than any gadget","not booking tours — going at off-peak hours instead","the first meal in any city should be at a market, not a restaurant"]],
+  tech:[["automating your most repeated weekly task first","using AI to draft, then editing yourself","keyboard shortcuts that save 20 minutes a day"],["having one app per category instead of five","turning off all non-essential notifications","using your calendar as a to-do list"],["batch-processing email twice a day only","cloud backups for everything you'd miss","password manager to eliminate one friction point"],["browser tab limits to focus your attention","offline mode for productivity apps when you need deep work","customising your phone's home screen to reflect your actual priorities"],["using voice memos instead of notes for speed","building templates for every repetitive task","the 2-minute rule for emails that pile up"]],
+  education:[["spaced repetition beats re-reading every time","teaching what you learn immediately after learning it","handwriting notes for retention even in a digital world"],["learning in short blocks with breaks outperforms marathon sessions","connecting new knowledge to something you already know","asking 'how does this apply to my life' after every lesson"],["sleep is when memories are actually consolidated","active recall over passive review every single time","setting a question before you read, not after"],["Pomodoro isn't just hype — timed focus changes output","studying the night before, sleeping on it, reviewing in the morning","summarising in one sentence after every section"],["interleaved practice (mixing topics) beats blocked practice","writing summaries in your own words forces deeper processing","teaching it to someone else reveals every gap"]],
+  motivation:[["action creates motivation, not the other way around","identity-based habits outlast goal-based ones","the gap between where you are and where you want to be is the work"],["discomfort is the price of growth — pay it or don't grow","comparing your chapter one to someone else's chapter twenty","most success is invisible work that nobody saw"],["accountability isn't weakness — it's strategy","small wins compound exactly like small losses do","the version of you that wins starts the day differently"],["done is infinitely better than perfect","your environment shapes your behaviour more than willpower does","future you is watching what present you does today"],["the window of motivation is smaller than you think — act immediately","most people overestimate a week and underestimate a year","who you spend time with determines where you end up"]],
+  comedy:[["confidently doing the wrong thing","having a whole plan that lasts exactly three days","overthinking a decision for a week then doing the first thing anyway"],["explaining something technical to someone who didn't ask","arriving somewhere five minutes early and calling that organised","pretending to understand something then Googling it immediately after"],["making a very reasonable plan that completely falls apart","using 'I'll do it tomorrow' as a full personality trait","having seventeen browser tabs open and adding more"],["telling yourself 'just five more minutes'","spending more time researching something than actually doing it","confidently giving advice on something you learnt about ten minutes ago"],["saying 'I'm almost there' 20 minutes before you even leave","replying 'lol' to everything when you don't know what else to say","starting a healthy habit on Monday and forgetting by Wednesday"]],
+  luxury:[["understanding that luxury is about time, not just money","choosing one truly exceptional thing over three good things","the material and craft behind something that costs what it costs"],["the invisible cues that separate luxury from expensive","why service is the actual product in fine hospitality","how the ultra-wealthy approach objects differently"],["the silence and restraint that define real luxury branding","why the most luxurious experiences are often the quietest","the moment something becomes worth its price"],["the lifetime cost comparison between cheap and quality","how heritage and story add value that material alone can't","why old money avoids logos and new money chases them"],["the details in luxury that most people walk past","how luxury objects are designed to be inherited, not replaced","why bespoke exists in a world of mass production"]],
+  cars:[["how depreciation works in your favour when buying used","the running costs nobody includes in their review","what the spec sheet doesn't tell you about how it drives"],["the difference between a car being fast and a car being engaging","why a light, slower car often beats a heavy, faster one","the one maintenance item most owners neglect"],["how to get a great deal at a dealership without aggression","the difference a good tyre makes that nobody talks about","why driving position matters more than most reviews mention"],["the community that comes with certain car choices","how modifications affect resale more than people realise","what to look for when buying used that isn't on the checklist"],["the emotional relationship between driver and machine","why some cars hold their value and others don't","the small detail in build quality that reveals everything"]],
+  realestate:[["the search radius rule most buyers get wrong","how to read a property listing for what it isn't saying","what to look for in a viewing that you can't Google"],["why mortgage type matters more than rate in the long run","the neighbourhood metric that predicts value growth","how planning applications near a property change its future"],["the renovation that always adds value vs the one that rarely does","why service charges can make or break a leasehold","the survey level that's always worth paying for"],["what cash buyers can negotiate that mortgage buyers can't","how to use comparable sales data like an agent","the lease length that triggers a price drop"],["the conveyancing red flags that kill deals","how estate agents are incentivised and what that means for you","building a power team: broker, solicitor, surveyor, agent"]],
+  photography:[["light is the subject — everything else is logistics","the 500 rule for sharp night sky shots","what reading a histogram actually tells you"],["why getting closer usually beats zooming in","how one stop of additional light changes everything","the editing workflow that creates consistent results"],["composition rules worth breaking and why","what lens choice says about the story you're telling","the difference between a technically correct photo and a good one"],["how to build a consistent editing preset","the settings for sharp hand-held shots in low light","why backing up twice is the only system worth using"],["the difference between a busy photo and a complex one","how negative space works as a compositional tool","why colour grading should start with shadows, not highlights"]]
+,
+  personalbranding:[["your profile should explain who you help before what you do","consistency beats frequency — every single time","the niche you avoid is usually the one that would work"],["content that teaches earns saves; content that inspires earns shares","your aesthetic is a first impression that happens before the caption","the bio line that does the most work you're probably not writing"],["repurposing one long piece of content into five shorter ones","engaging with your audience before posting, not after","treating comments as free market research"],["the creator who helps one person deeply beats the one who entertains thousands shallowly","documenting the process earns more trust than announcing the result","building once and distributing everywhere"],["your story is the differentiator that no algorithm can replicate","the content gap between what your audience asks and what they secretly need","authority is built slowly — by being right, repeatedly, in public"]]
 };
 
-const CAPTIONS = {
-  lifestyle: ["Reset, refresh, repeat 🌿","Your environment is either working for you or against you.","This one's for the overthinkers 💭","Small shifts. Big life. ✨"],
-  fitness:   ["Your future self is watching today's reps 💪","Show up. Every. Single. Time.","Consistency > perfection. Always. 🏋️","Train like you mean it."],
-  food:      ["Eat well, feel well, live well 🍳","Recipe dump incoming — save this 📌","Your kitchen is your best restaurant.","5 ingredients, 10 minutes, zero regrets."],
-  business:  ["Build the thing. Sell the thing. Repeat. 💰","Your side hustle is one decision away.","No fluff. Just what actually works.","First sale changes everything. Here's how."],
-  fashion:   ["Outfit formula that never fails 🖤","Get dressed with intention.","Style is knowing who you are 👗","The capsule wardrobe era has begun."],
-  travel:    ["Not all those who wander are lost ✈️","The trip you don't book doesn't happen.","More stamps, fewer regrets.","Somewhere new is always the right answer."],
-  tech:      ["Work smarter, scroll less 📱","Your phone should work for you.","The tool that saves me daily 💻","Delete one app. Download this one."],
-  education: ["Learning is the only investment that compounds forever 📚","Your brain can do more than you think.","Smart studying, not hard studying.","One concept a day changes a year."],
-  motivation:["You already know what to do 🔥","The best time to start was yesterday. Second best: now.","Nobody is coming. You've got this.","This is your sign. Take it seriously."],
-  comedy:    ["It's giving chaotic but make it content 😂","Relatable or a personal attack? Both.","Not me posting this at midnight 💀","The accuracy physically hurts."],
+const CAPTIONS={
+  lifestyle:["Reset, refresh, repeat 🌿","Your environment is either working for you or against you.","This one's for the overthinkers 💭","Small shifts. Big life. ✨","Life is too short to live on autopilot.","Design your days or someone else will."],
+  fitness:["Your future self is watching today's reps 💪","Show up. Every. Single. Time.","Consistency > perfection. Always.","Train like you mean it.","The gym is just a mirror. Show it something worth reflecting.","Earned, not given."],
+  food:["Eat well, feel well, live well 🍳","Recipe drop incoming — save this 📌","Your kitchen is your best restaurant.","5 ingredients, 10 minutes, zero regrets.","Food that actually tastes like effort.","Cooking is the original self-care."],
+  business:["Build the thing. Sell the thing. Repeat. 💰","Your side hustle is one decision away.","No fluff. Just what actually works.","First sale changes everything.","The grind is overrated. The system is everything.","Money follows value. Always."],
+  fashion:["Outfit formula that never fails 🖤","Get dressed with intention.","Style is knowing who you are.","The capsule wardrobe era has begun.","Looking expensive isn't expensive.","Clothes are a language. What are you saying?"],
+  travel:["Not all those who wander are lost ✈️","The trip you don't book doesn't happen.","More stamps, fewer regrets.","Somewhere new is always the right answer.","Travel is the one thing you can buy that makes you richer.","The world is too big to stay in one place."],
+  tech:["Work smarter, scroll less 📱","Your phone should work for you.","The tool that saves me daily 💻","Delete one app. Download this one.","Your setup is either a superpower or a distraction.","Automate the boring. Do the important."],
+  education:["Learning is the only investment that compounds forever 📚","Your brain can do more than you think.","Smart studying, not hard studying.","One concept a day changes a year.","The best investment you'll ever make is in your own mind.","What you know is who you can become."],
+  motivation:["You already know what to do 🔥","The best time to start was yesterday. Second best: now.","Nobody is coming. You've got this.","This is your sign. Take it seriously.","Discipline is freedom.","The work is the reward."],
+  comedy:["It's giving chaotic but make it content 😂","Relatable or a personal attack? Both.","Not me posting this at midnight 💀","The accuracy physically hurts.","My life is a free comedy show with no refunds.","I'm not a mess, I'm a mood."],
+  luxury:["Quality over everything. ✦","The best things in life are made to last.","Luxury is a standard, not a statement.","Less, but better.","The finest things rarely announce themselves.","Excellence is a habit, not an occasion."],
+  cars:["Built for those who feel the road 🚗","Not just transport. A relationship.","The right car changes how you experience everything.","Drive something worth remembering.","Performance is personal.","Details make the car. Details make the driver."],
+  realestate:["Property is the closest thing to building a legacy 🏠","Not just a house. A foundation.","Buy land — they're not making more of it.","Your best investment is the one you understand completely.","Wealth is built in real estate, lost in speculation.","Every property has a story. Know it before you buy it."],
+  photography:["The best camera is the one that captures what matters 📷","Every photo is a decision. Make them well.","Light is everything. Everything else is details.","See differently. Shoot differently.","A great photo never goes out of style.","Your camera doesn't take the photo. You do."],
+  personalbranding:["Your brand is what people say when you leave the room 🎯","Build the reputation before you need it.","Authenticity isn't a strategy. It's a foundation.","You're the product. Act accordingly.","Consistency is how unknown people become unforgettable.","Tell your story before someone else tells it for you."]
 };
 
-const CHECKLISTS = [
-  "Choose a bright spot with natural light or face a window",
-  "Shoot vertically (9:16 ratio) — fill the whole frame",
-  "Film in 3-second clips minimum so they don't look choppy",
-  "Hook text on screen in the first 2 seconds",
-  "Keep your background clean or intentionally styled",
-  "Film 2–3 takes of each part — pick the best one",
-  "Use trending audio from the Reels audio library",
-  "Add captions/subtitles — 85% of viewers watch on mute",
-  "End on a clear action (save, follow, comment, share)",
-  "Post when your audience is online (check your Insights)",
-  "Engage with comments in the first 30 minutes after posting",
-  "Cross-post to your Instagram Stories with a link sticker",
-];
+const CHECKLISTS=["Choose a bright spot with natural light or face a window","Shoot vertically (9:16 ratio) — fill the whole frame","Film in 3-second clips minimum so they don't look choppy","Hook text on screen in the first 2 seconds","Keep your background clean or intentionally styled","Film 2–3 takes of each part — pick the best one","Use trending audio from the Reels audio library","Add captions/subtitles — 85% of viewers watch on mute","End on a clear action (save, follow, comment, share)","Post when your audience is online (check your Insights)","Engage with comments in the first 30 minutes after posting","Cross-post to your Instagram Stories with a link sticker","Check your audio levels before posting — mute or music?","Make sure your face is lit, not silhouetted","Use B-roll cutaways to maintain visual interest","Match your cuts to the beat of the music","Don't use a completely blank white background — add texture","Film at 30fps minimum; 60fps for slow-motion sections","Your thumbnail frame should be the most visually striking moment","Test your hook on friends before posting — does it make them watch?"];
 
+/* Expanded universal hashtags */
+const UNIVERSAL=["#reels","#instagramreels","#viral","#trending","#explore","#fyp","#foryou","#reelsviral","#reelstagram","#trending2025"];
+
+/* Bio data */
+const BIO_TEMPLATES={
+  punchy:{
+    lifestyle:["Living intentionally. Sharing honestly.\n✦ {USP}\n{CTA}","Making small changes that actually stick.\n{USP}\n📍 {CTA}","Your guide to a life you don't need a holiday from.\n✦ {USP} · {CTA}"],
+    fitness:["Training smarter, not just harder.\n💪 {USP}\n{CTA}","Real fitness. Real results. No BS.\n✦ {USP}\n{CTA}","Helping you build the body that matches your effort.\n{USP} · {CTA}"],
+    food:["5 ingredients. 10 minutes. Life-changing.\n🍳 {USP}\n{CTA}","Cooking for people who claim they can't cook.\n✦ {USP}\n{CTA}","Good food doesn't have to be complicated.\n{USP} · {CTA}"],
+    business:["I help people build businesses that actually pay them.\n💰 {USP}\n{CTA}","Revenue > Vanity metrics.\n✦ {USP}\n{CTA}","Turn your expertise into income.\n{USP} · {CTA}"],
+    fashion:["Dressing well is a skill. I'll teach you.\n👗 {USP}\n{CTA}","Style > Trends. Always.\n✦ {USP}\n{CTA}","Looking intentional doesn't require a big budget.\n{USP} · {CTA}"],
+    travel:["I find the world's most underrated places.\n✈️ {USP}\n{CTA}","Budget travel with no compromise on experience.\n✦ {USP}\n{CTA}","The world is too big to stay in one place.\n{USP} · {CTA}"],
+    tech:["Tech that works for you, not against you.\n📱 {USP}\n{CTA}","Honest reviews. No brand deals skewing them.\n✦ {USP}\n{CTA}","I test the tools so you don't have to.\n{USP} · {CTA}"],
+    luxury:["Luxury decoded.\n💎 {USP}\n{CTA}","What's worth spending on. What isn't.\n✦ {USP}\n{CTA}","The finer things, curated with context.\n{USP} · {CTA}"],
+    cars:["Built for those who feel the road.\n🚗 {USP}\n{CTA}","Honest car content with no manufacturer deals.\n✦ {USP}\n{CTA}","Performance, value, and the truth about both.\n{USP} · {CTA}"],
+    realestate:["I help people build wealth through property.\n🏠 {USP}\n{CTA}","Property investing without the jargon.\n✦ {USP}\n{CTA}","The numbers behind the houses.\n{USP} · {CTA}"],
+    photography:["I shoot what I see. I share what I learn.\n📷 {USP}\n{CTA}","Better photos. Simpler process.\n✦ {USP}\n{CTA}","Technical skill. Artistic eye.\n{USP} · {CTA}"],
+    personalbranding:["Build the brand before you need it.\n🎯 {USP}\n{CTA}","Your story is your superpower. Let me show you how.\n✦ {USP}\n{CTA}","I help experts become the obvious choice.\n{USP} · {CTA}"],
+    motivation:["I say the things nobody wants to hear.\n🔥 {USP}\n{CTA}","Real talk about what it actually takes.\n✦ {USP}\n{CTA}","Less inspiration. More instruction.\n{USP} · {CTA}"],
+    education:["I make complex things simple.\n📚 {USP}\n{CTA}","Learn faster. Forget less.\n✦ {USP}\n{CTA}","Education without the classroom.\n{USP} · {CTA}"]
+  },
+  premium:{
+    lifestyle:["Intentional living for discerning minds.\n✦ {USP}\n{CTA}","A quieter, better way to live.\n{USP} · {CTA}","Curated perspective on life worth living.\n✦ {USP} · {CTA}"],
+    luxury:["Connoisseur of the exceptional.\n💎 {USP}\n{CTA}","Where quality meets discernment.\n✦ {USP} · {CTA}","The standard others aspire to.\n{USP} · {CTA}"],
+    cars:["Automotive excellence, honestly reviewed.\n🚗 {USP}\n{CTA}","The pursuit of the perfect drive.\n✦ {USP} · {CTA}","Where performance meets refinement.\n{USP} · {CTA}"],
+    realestate:["Premium property. Considered investment.\n🏠 {USP}\n{CTA}","Where capital meets character.\n✦ {USP} · {CTA}","The art of acquiring the right property.\n{USP} · {CTA}"],
+    fashion:["Style as an investment, not an expense.\n👗 {USP}\n{CTA}","Considered dressing for considered people.\n✦ {USP} · {CTA}","Quality, fit, and the long game.\n{USP} · {CTA}"],
+    personalbranding:["Authority built deliberately.\n🎯 {USP}\n{CTA}","The brand that precedes you.\n✦ {USP} · {CTA}","Reputation over reach. Always.\n{USP} · {CTA}"],
+    business:["Building businesses that compound.\n💰 {USP}\n{CTA}","The quiet compounders. The real builders.\n✦ {USP} · {CTA}","Revenue, retention, and the long game.\n{USP} · {CTA}"],
+    photography:["Visual stories told with precision.\n📷 {USP}\n{CTA}","The art of seeing, refined.\n✦ {USP} · {CTA}","Excellence in every frame.\n{USP} · {CTA}"],
+    fitness:["The pursuit of physical excellence.\n💪 {USP}\n{CTA}","Performance, aesthetics, longevity.\n✦ {USP} · {CTA}","Built slowly. Built to last.\n{USP} · {CTA}"],
+    food:["Culinary precision. Everyday accessibility.\n🍳 {USP}\n{CTA}","The art of eating exceptionally well.\n✦ {USP} · {CTA}","Technique, quality, and flavour first.\n{USP} · {CTA}"],
+    travel:["The world, experienced properly.\n✈️ {USP}\n{CTA}","Rare destinations. Considered perspectives.\n✦ {USP} · {CTA}","Travel as an education, not an escape.\n{USP} · {CTA}"],
+    tech:["Precise tools for demanding work.\n📱 {USP}\n{CTA}","Technology in service of mastery.\n✦ {USP} · {CTA}","The signal in a world of noise.\n{USP} · {CTA}"],
+    motivation:["Uncommon clarity for uncommon results.\n🔥 {USP}\n{CTA}","The mindset before the method.\n✦ {USP} · {CTA}","Rigorous thinking. Real outcomes.\n{USP} · {CTA}"],
+    education:["Precision learning for serious people.\n📚 {USP}\n{CTA}","The difference between knowing and mastering.\n✦ {USP} · {CTA}","Depth over breadth. Always.\n{USP} · {CTA}"]
+  }
+};
+
+/* Caption Generator data */
+const CAPTION_TEMPLATES = {
+  engaging:{
+    pre:["Stop and read this.","This is the post I wish I'd seen earlier.","Real talk:","Okay, I need to say this.","This might ruffle some feathers but —"],
+    body:{lifestyle:["Your morning doesn't have to look like anyone else's. Mine looks like {TOPIC} — and it changed everything. The things that work for you are usually the boring ones nobody posts about."],fitness:["Nobody tells you this about {TOPIC} — it's not the program that fails you, it's the expectation. Here's how I reframed everything."],food:["I made {TOPIC} five times this week and I'd do it again. The secret isn't the recipe — it's knowing which steps actually matter."],business:["Built my business around {TOPIC} and the number one thing I'd tell my past self is: charge more, complain less, solve one problem deeply."],fashion:["Been experimenting with {TOPIC} for months. The outfit formula I landed on works because it starts with fit, not trend."],luxury:["Experienced {TOPIC} last week and understood immediately why people choose quality over quantity. Once you feel the difference, you can't unfeel it."],cars:["Drove {TOPIC} this weekend and my verdict might surprise you. Performance on paper is one thing. How it makes you feel is everything."],realestate:["{TOPIC} changed how I think about money. Property is the one asset most people understand and yet most people still get wrong."],photography:["Shot {TOPIC} with nothing but a 50mm and natural light. The simplest setups force you to find the shot, not manufacture it."],personalbranding:["Been thinking about {TOPIC} and here's the uncomfortable truth: most people's content is forgettable not because they're untalented but because they're trying to appeal to everyone."],motivation:["Started {TOPIC} six months ago. What changed wasn't the activity — it was the identity shift that came with consistently showing up."],travel:["Visited {TOPIC} last month and it reminded me why I travel slow. The places worth knowing take more than a weekend."],tech:["{TOPIC} has saved me more hours than I can count. The productivity gains from a single good tool compound faster than people realise."],education:["Studying {TOPIC} using active recall instead of re-reading. Two weeks in: I remember everything. Years of studying wrong."],comedy:["{TOPIC} is the content I never asked for and yet here I am. Thank you for coming to my 2am TED talk."]}},
+  storytelling:{
+    pre:["Let me tell you something that happened.","I've been sitting on this story.","Nobody asked for this but here it is.","The honest version:","A moment I keep coming back to:"],
+    body:{lifestyle:["Six months ago, {TOPIC} felt impossible. Now it's the thing I point to when someone asks what actually changed my life. The truth is simpler than it looks from the outside."],fitness:["I avoided {TOPIC} for two years. Then I tried it once. That was the turning point I didn't know I needed. Some things only make sense in retrospect."],food:["The first time I made {TOPIC}, it was a disaster. By the tenth time, it was the thing my family asked for every week. Some skills just need reps."],business:["I nearly gave up on {TOPIC} in month three. The thing that kept me going was embarrassingly small. Sometimes the smallest reasons are the stickiest ones."],fashion:["My relationship with {TOPIC} started with a mistake — buying the wrong size at a market. Two years later it's the thing I style most. Accidents teach more than intention."],luxury:["My first real experience with {TOPIC} was supposed to be a one-off treat. It became a benchmark. Quality doesn't ruin your taste for cheap things. It clarifies it."],cars:["The first time I drove {TOPIC}, I pulled over after five minutes just to sit with it. Some cars say something about the engineering team that built them. This is one of them."],realestate:["I nearly walked away from {TOPIC} twice before I bought it. Every objection I had was solvable. Most objections in property are."],photography:["The photo from {TOPIC} that I'm most proud of almost didn't get taken. I was packing up. The light changed. I stayed. That's the whole lesson."],personalbranding:["I built {TOPIC} thinking it would attract one type of person. It attracted a completely different one. Sometimes your audience finds you better than you find them."],motivation:["The lowest moment in {TOPIC} was the month everything felt pointless. The breakthrough came six weeks later. This is why quitting early is almost always the wrong call."],travel:["{TOPIC} wasn't on my original itinerary. A stranger's recommendation at a café. The best places always find you this way."],tech:["I resisted {TOPIC} for months. Thought it was overrated. Tried it on a whim. Now I can't imagine my workflow without it. Some converts are the loudest because they were the most skeptical."],education:["I started {TOPIC} knowing nothing. The beginner phase is always the most humbling. It's also always when the most important learning happens."],comedy:["I was doing {TOPIC} with complete confidence. Reader, I was doing it completely wrong. This is a safe space. Share your equivalent below."]}},
+  minimal:{
+    pre:["✦","—","A reminder.","Worth saying.","Quietly:"],
+    body:{lifestyle:["{TOPIC}.\nThe routine isn't the goal. The life it builds is."],fitness:["{TOPIC}.\nThe work is simple. The consistency is the hard part."],food:["{TOPIC}.\nFive ingredients. Ten minutes. Done."],business:["{TOPIC}.\nOne problem. Solved deeply. That's the business."],fashion:["{TOPIC}.\nFit first. Everything else second."],luxury:["{TOPIC}.\nLess, but better."],cars:["{TOPIC}.\nHow it makes you feel matters more than what it does on paper."],realestate:["{TOPIC}.\nThe deal that didn't happen taught me more than the one that did."],photography:["{TOPIC}.\nLight is the subject. Everything else is detail."],personalbranding:["{TOPIC}.\nBe consistently useful. The audience follows."],motivation:["{TOPIC}.\nAction first. Motivation follows."],travel:["{TOPIC}.\nThe places worth knowing take more than a weekend."],tech:["{TOPIC}.\nOne better tool. Compounding returns."],education:["{TOPIC}.\nActive recall. Daily. No exceptions."],comedy:["{TOPIC}.\nThis is exactly as chaotic as it looks."]}},
+  question:{
+    pre:["Quick question:","Honest question:","Tell me I'm not alone —","Help me understand:","Be honest:"],
+    body:{lifestyle:["Does anyone else find {TOPIC} harder than it looks? The version everyone shares online is the polished one. The real version is messier. Drop a 🙋 if you relate."],fitness:["When did {TOPIC} click for you? For me it took six months of doing it wrong first. Curious whether that's universal or just me."],food:["Is {TOPIC} the one I should've been making all along? Because I've been overcomplicating this. What's your version of the 10-minute dinner that actually works?"],business:["What's the one thing about {TOPIC} you wish someone had told you at the beginning? I'll go first in the comments."],fashion:["How long did it take you to figure out {TOPIC}? I spent years buying the wrong things before one simple rule changed everything."],luxury:["What's the luxury thing in your life that was actually worth it? For me it's {TOPIC}. Some things really do justify the cost."],cars:["Manual or automatic for {TOPIC}? The debate continues. My honest take after driving both in the comments."],realestate:["What would you look for in {TOPIC} that most people overlook? Drop your answer below — I want to hear what the experienced buyers check first."],photography:["What changed your photography the most? For me it was understanding {TOPIC}. Before that, I was technically correct and artistically boring."],personalbranding:["If you could restart your {TOPIC} with what you know now — what's the first thing you'd do differently? Answers going in my notes."],motivation:["What's the one mindset shift around {TOPIC} that actually stuck? Drop it below — we're building a resource thread."],travel:["Where has {TOPIC} surprised you the most? I need new places on my list and I trust this community more than any travel blog."],tech:["What app or tool has actually earned a permanent spot in your daily stack? For me it's {TOPIC}. Genuinely changed how I work."],education:["How do you approach {TOPIC} when you're starting from zero? I'm building a free resource and want to hear from real learners."],comedy:["Who else did {TOPIC} to themselves and then wondered why? Just me? Okay. 💀"]}},
+  luxury:{
+    pre:["Excellence leaves evidence.","A note on quality:","What few people understand:","Worth knowing:","On the subject of standards:"],
+    body:{luxury:["{TOPIC} isn't about cost. It's about the decision to choose better. Once you understand what excellence actually feels like, the calculus changes permanently."],lifestyle:["The quiet luxury of {TOPIC} is that nobody else needs to know. That's the point. The best things in life are personal, not performative."],fashion:["Quality in {TOPIC} announces itself to the people who know — and says nothing to those who don't. That's the correct audience."],realestate:["The finest property isn't the most expensive. It's the most considered. {TOPIC} is the thing most buyers look past."],cars:["The difference between owning and driving {TOPIC} is the same as the difference between eating food and tasting it. Presence changes everything."],travel:["{TOPIC} at the level that matters isn't about where you go — it's about how you're there when you arrive."],food:["Exceptional {TOPIC} shares one characteristic with every other exceptional thing: it was made with more care than the brief required."],photography:["The photographer who understands {TOPIC} isn't chasing the shot. The shot finds them, because they've learned to see."],personalbranding:["The premium personal brand isn't the loudest. It's the most precise. {TOPIC} done with excellence speaks before you say a word."],fitness:["The pursuit of physical excellence through {TOPIC} is one of the few areas of life where the reward is exactly proportional to the input."],tech:["{TOPIC} at its best gets out of the way. The finest tools are the ones you stop noticing because they never fail you."],business:["The best businesses built around {TOPIC} have one thing in common: they solve a problem so completely that the customer returns without being chased."],motivation:["The standard required to reach {TOPIC} is not motivation. It's a decision made so clearly and so permanently that the alternative stops being visible."],travel:["To travel to {TOPIC} with eyes open is to understand why the world rewards presence over speed."],education:["Mastering {TOPIC} takes as long as it takes and not one day less. This is not a limitation. It is the whole point."]}},
+  funny:{
+    pre:["POV:","Honest review:","Nobody asked but:","True story:","Filing this under 'things I learned the hard way':"],
+    body:{lifestyle:["Me attempting {TOPIC} like I have my life together. Spoiler: the routine lasted four days. But day one looked incredible on a story."],fitness:["Tried {TOPIC} for the first time. My muscles filed a formal complaint. I'll report back when they start speaking to me again."],food:["I made {TOPIC} following a recipe exactly. The recipe was wrong. Or I was wrong. Either way, we ate it and called it 'deconstructed'."],business:["{TOPIC} looked straightforward in the YouTube tutorial. The YouTube tutorial was three years old and made by someone who had already figured it out. I had not."],fashion:["Decided to try {TOPIC} today. Went very well until I was standing in front of a mirror. Currently reconsidering several choices."],luxury:["Experienced {TOPIC} for the first time and have been insufferable about it since. My apologies to everyone who knows me."],cars:["Test drove {TOPIC}. Immediately understood why sensible people make terrible financial decisions. I respect them. I am one of them."],realestate:["Attended an open house for {TOPIC}. Started mentally redesigning the kitchen within three minutes. I'm not buying it. The kitchen doesn't know that."],photography:["Spent an hour setting up for {TOPIC}. The best photo was the accidental one I took trying to check my settings. This is photography."],personalbranding:["Decided to build my personal brand around {TOPIC}. Very professional. Very strategic. Posted at 11pm. No plan. Zero regrets."],motivation:["Day one of {TOPIC}: motivated. Day two: still motivated. Day three: forgotten. Day thirty: rediscovering this post and feeling judged by past me."],travel:["{TOPIC} was not what the blog said it would be. The blog was written by someone who got lucky with the weather. I did not get lucky with the weather."],tech:["Downloaded a new app for {TOPIC}. Spent 40 minutes setting it up. Used it once. It's been in a folder called 'maybe' ever since."],education:["Started learning {TOPIC} using the Feynman technique. Feynman did not have to study while watching TV. Respect."],comedy:["{TOPIC} is basically just me narrating my own chaos at this point. Welcome to the show. No refunds."]}}
+};
+
+/* Hashtag pack data for the dedicated page */
+const HASHTAG_PACKS = {
+  viral:["#viral","#fyp","#foryoupage","#trending","#explore","#reelsviral","#reelstrending","#viralpost","#fypシ","#viralcontent","#explorepage","#trendingnow","#viralreels","#instatrending","#reachmore"],
+  growth:["#follow","#followforme","#instagramgrowth","#growthstrategy","#socialmediatips","#contentcreator","#creatoreconomy","#buildyourbrand","#organicgrowth","#reachmore","#engagementboost","#contentmarketing","#instagramtips","#audiencebuilding","#socialstrategy"],
+  niche_extra:{
+    luxury:["#luxurycar","#luxuryhome","#luxuryfashion","#luxurywatch","#finedining","#luxurytravel","#5star","#luxurybrand","#highend","#premiumliving"],
+    cars:["#carporn","#supercarsoninstagram","#exoticcar","#modifiedcar","#racecar","#petrolhead","#dailydriver","#classiccars","#carphotography","#autoshow"],
+    realestate:["#luxuryproperty","#propertyinvestor","#houseflip","#rentalproperty","#propertyportfolio","#ukproperty","#newbuildhome","#housetour","#buytolet","#mortgagetips"],
+    photography:["#shotoniphone","#canonphotography","#sonyphotography","#nikonphotography","#photographylovers","#goldenhour","#blackandwhite","#portraitphotography","#travelphotography","#naturephotography"],
+    personalbranding:["#brandstory","#thought leader","#niche","#contentpillars","#instagramcoach","#brandidentity","#ugccreator","#contentcalendar","#socialmediacoach","#creatorlife"]
+  }
+};
+
+/* ─────────────────────────────────────────────────────────────
+   STATE
+───────────────────────────────────────────────────────────── */
 let currentData = null;
 
-document.querySelectorAll('.pill').forEach(p => {
-  p.addEventListener('click', function() {
-    document.querySelectorAll('.pill').forEach(x => x.classList.remove('active'));
-    this.classList.add('active');
-  });
-});
-
-document.querySelectorAll('.tab').forEach(t => {
-  t.addEventListener('click', function() {
-    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(x => x.style.display = 'none');
-    this.classList.add('active');
-    document.getElementById('tab-' + this.dataset.tab).style.display = 'block';
-  });
-});
-
-function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-function pickN(arr, n) { return [...arr].sort(() => Math.random() - 0.5).slice(0, n); }
-function fillTemplate(str, map) { return str.replace(/\{(\w+)\}/g, (_, k) => map[k] || _); }
-
-function showToast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2600);
+/* ─────────────────────────────────────────────────────────────
+   NAV
+───────────────────────────────────────────────────────────── */
+const PAGE_META = {
+  reel:{title:"Reel Idea Generator",sub:"Pick your niche, tone & length — get a full script, hooks, hashtags & more."},
+  caption:{title:"Caption Generator",sub:"Generate captions that stop the scroll and drive engagement."},
+  bio:{title:"Instagram Bio Generator",sub:"Build a bio that communicates your value in under 150 characters."},
+  hashtags:{title:"Hashtag Pack Builder",sub:"Build a targeted hashtag strategy for maximum reach."}
+};
+function switchPage(id, el){
+  document.querySelectorAll('.page-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  el.classList.add('active');
+  const m = PAGE_META[id];
+  document.getElementById('pageTitle').textContent = m.title;
+  document.getElementById('pageSubtitle').textContent = m.sub;
 }
 
-function generate() {
-  const niche    = document.getElementById('niche').value;
-  const duration = document.getElementById('duration').value;
-  const keyword  = document.getElementById('keyword').value.trim();
-  const tone     = document.querySelector('.pill.active').dataset.tone;
+/* ─────────────────────────────────────────────────────────────
+   UTILITY
+───────────────────────────────────────────────────────────── */
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function pickN(arr,n){return [...arr].sort(()=>Math.random()-.5).slice(0,n)}
+function fillTpl(str,map){return str.replace(/\{(\w+)\}/g,(_,k)=>map[k]||'')}
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,'<br>')}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
+function showToast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2600)}
+async function copyText(text){try{await navigator.clipboard.writeText(text);showToast('✓ Copied to clipboard!')}catch{showToast('⚠ Select and copy manually')}}
 
-  const nicheData = NICHES[niche];
-  const template  = TEMPLATES[tone];
-  const pointSet  = pick(POINTS[niche]);
-  const topic     = keyword || pick(nicheData.topics);
-  const hook      = pick(nicheData.hooks);
+/* ─────────────────────────────────────────────────────────────
+   PILL INIT
+───────────────────────────────────────────────────────────── */
+function initPills(containerId){
+  document.querySelectorAll('#'+containerId+' .pill').forEach(p=>{
+    p.addEventListener('click',function(){
+      document.querySelectorAll('#'+containerId+' .pill').forEach(x=>x.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+}
+initPills('tones');
+initPills('cap-ctas');
+initPills('bio-styles');
+initPills('hash-mix');
 
-  const vars = {
-    HOOK: hook, TOPIC: topic,
-    NICHE: nicheData.label.toLowerCase(),
-    POINT1: pointSet[0], POINT2: pointSet[1], POINT3: pointSet[2],
-  };
+/* ─────────────────────────────────────────────────────────────
+   TABS
+───────────────────────────────────────────────────────────── */
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',function(){
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(x=>x.style.display='none');
+    this.classList.add('active');
+    document.getElementById('tab-'+this.dataset.tab).style.display='block';
+  });
+});
 
-  const filledHook = fillTemplate(template.hook, vars);
-  const filledBody = fillTemplate(template.body, vars);
-  const filledCTA  = fillTemplate(template.cta,  vars);
-
-  const universal = ["#reels","#instagramreels","#viral","#trending","#explore"];
-  const tags = [...pickN(nicheData.hashtags, 12), ...pickN(universal, 3)];
-  const caption  = pick(CAPTIONS[niche]);
-  const virality = Math.min(99, Math.max(60, template.virality + Math.floor(Math.random() * 14 - 7)));
-  const durationLabel = { "15":"15s","30":"30s","60":"60s","90":"90s" }[duration];
-  const morePicks = pickN(nicheData.topics.filter(t => t !== topic), 3);
-
-  currentData = { hook: filledHook, body: filledBody, cta: filledCTA, tags, caption, topic, niche, tone, durationLabel };
-
-  renderScript({ hook: filledHook, body: filledBody, cta: filledCTA, caption, topic, tone, durationLabel, virality, niche });
+/* ─────────────────────────────────────────────────────────────
+   REEL GENERATOR
+───────────────────────────────────────────────────────────── */
+function generate(){
+  const niche=document.getElementById('niche').value;
+  const duration=document.getElementById('duration').value;
+  const keyword=document.getElementById('keyword').value.trim();
+  const tone=document.querySelector('#tones .pill.active').dataset.tone;
+  const nicheData=NICHES[niche];
+  const template=TEMPLATES[tone];
+  const pointSet=pick(POINTS[niche]);
+  const topic=keyword||pick(nicheData.topics);
+  const hook=pick(nicheData.hooks);
+  const vars={HOOK:hook,TOPIC:topic,NICHE:nicheData.label.toLowerCase(),POINT1:pointSet[0],POINT2:pointSet[1],POINT3:pointSet[2]};
+  const filledHook=fillTpl(template.hook,vars);
+  const filledBody=fillTpl(template.body,vars);
+  const filledCTA=fillTpl(template.cta,vars);
+  const tags=[...pickN(nicheData.hashtags,12),...pickN(UNIVERSAL,3)];
+  const caption=pick(CAPTIONS[niche]);
+  const virality=Math.min(99,Math.max(60,template.virality+Math.floor(Math.random()*14-7)));
+  const durationLabel={"15":"15s","30":"30s","60":"60s","90":"90s"}[duration];
+  const morePicks=pickN(nicheData.topics.filter(t=>t!==topic),3);
+  currentData={hook:filledHook,body:filledBody,cta:filledCTA,tags,caption,topic,niche,tone,durationLabel};
+  renderScript({hook:filledHook,body:filledBody,cta:filledCTA,caption,topic,tone,durationLabel,virality,niche});
   renderHooks(nicheData.hooks);
   renderHashtags(tags);
-  renderCaption(caption, niche);
+  renderCaption(caption,niche);
   renderChecklist();
-  renderMore(morePicks, nicheData, niche);
-
-  const out = document.getElementById('outputSection');
+  renderMore(morePicks,nicheData,niche);
+  const out=document.getElementById('outputSection');
   out.classList.add('visible');
-  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(x => x.style.display = 'none');
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(x=>x.style.display='none');
   document.querySelector('[data-tab="script"]').classList.add('active');
-  document.getElementById('tab-script').style.display = 'block';
-  out.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('tab-script').style.display='block';
+  out.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-function renderScript({ hook, body, cta, caption, topic, tone, durationLabel, virality, niche }) {
-  document.getElementById('tab-script').innerHTML = `
+function renderScript({hook,body,cta,caption,topic,tone,durationLabel,virality,niche}){
+  document.getElementById('tab-script').innerHTML=`
     <div class="idea-card">
+      <div class="idea-card-glow"></div>
       <div class="idea-header">
-        <div class="idea-title-wrap">
+        <div>
           <div class="idea-number">Generated Script</div>
-          <div class="idea-title">${escHtml(capitalize(topic))}</div>
-        </div>
-        <div class="idea-tags">
-          <div class="idea-tag pink">${tone}</div>
-          <div class="idea-tag">${durationLabel}</div>
-          <div class="idea-tag">${capitalize(niche)}</div>
+          <div class="idea-title">${escHtml(cap(topic))}</div>
+          <div class="idea-tags" style="margin-top:8px">
+            <div class="idea-tag pink">${tone}</div>
+            <div class="idea-tag">${durationLabel}</div>
+            <div class="idea-tag violet">${cap(niche)}</div>
+          </div>
         </div>
       </div>
       <div class="script-sections">
@@ -891,20 +1066,18 @@ function renderScript({ hook, body, cta, caption, topic, tone, durationLabel, vi
         <div class="virality-label">
           <span>Virality Potential</span><strong>${virality}%</strong>
         </div>
-        <div class="bar-track">
-          <div class="bar-fill" id="viralityFill" style="width:0%"></div>
-        </div>
+        <div class="bar-track"><div class="bar-fill" id="viralityFill" style="width:0%"></div></div>
       </div>
     </div>`;
-  setTimeout(() => { const f = document.getElementById('viralityFill'); if(f) f.style.width = virality+'%'; }, 80);
+  setTimeout(()=>{const f=document.getElementById('viralityFill');if(f)f.style.width=virality+'%'},80);
 }
 
-function renderHooks(allHooks) {
-  document.getElementById('tab-hooks').innerHTML = `
+function renderHooks(allHooks){
+  document.getElementById('tab-hooks').innerHTML=`
     <div class="idea-card">
       <div class="section-label">🎣 Hook Library — click any to copy</div>
       <ul class="hooks-list">
-        ${allHooks.map((h,i) => `
+        ${allHooks.map((h,i)=>`
           <li class="hook-item" onclick="copyText(this.querySelector('.hook-txt').textContent)">
             <span class="hook-num">${String(i+1).padStart(2,'0')}</span>
             <span class="hook-txt">${escHtml(h)}</span>
@@ -913,94 +1086,242 @@ function renderHooks(allHooks) {
     </div>`;
 }
 
-function renderHashtags(tags) {
-  document.getElementById('tab-hashtags').innerHTML = `
+function renderHashtags(tags){
+  document.getElementById('tab-hashtags').innerHTML=`
     <div class="idea-card">
-      <div class="section-label">🏷 Hashtag Pack (${tags.length} tags)</div>
+      <div class="section-label">🏷 Hashtag Pack (${tags.length} tags) — click any to copy</div>
       <div class="hashtag-cloud">
-        ${tags.map(t => `<div class="hashtag">${t}</div>`).join('')}
+        ${tags.map(t=>`<div class="hashtag" onclick="copyText('${t}')">${t}</div>`).join('')}
       </div>
     </div>`;
 }
 
-function renderCaption(caption, niche) {
-  const extras = pickN(CAPTIONS[niche].filter(c => c !== caption), 2);
-  document.getElementById('tab-caption').innerHTML = `
+function renderCaption(caption,niche){
+  const extras=pickN(CAPTIONS[niche].filter(c=>c!==caption),2);
+  document.getElementById('tab-caption').innerHTML=`
     <div class="idea-card">
-      <div class="section-label">✍️ Caption Ideas</div>
-      <div class="caption-box">${escHtml(caption)}</div>
-      ${extras.map(c => `<div class="caption-box" style="margin-top:10px;opacity:.65">${escHtml(c)}</div>`).join('')}
+      <div class="section-label">✍️ Caption Ideas — click to copy</div>
+      ${[caption,...extras].map((c,i)=>`
+        <div class="caption-box" style="${i>0?'margin-top:10px;opacity:.65':''}" onclick="copyText(this.textContent)">${escHtml(c)}</div>
+      `).join('')}
     </div>`;
 }
 
-function renderChecklist() {
-  const items = pickN(CHECKLISTS, 8);
-  document.getElementById('tab-checklist').innerHTML = `
+function renderChecklist(){
+  const items=pickN(CHECKLISTS,9);
+  document.getElementById('tab-checklist').innerHTML=`
     <div class="idea-card">
       <div class="section-label">✅ Filming Checklist</div>
       <ul class="checklist">
-        ${items.map(i => `
-          <li>
-            <div class="check-icon">✓</div>
-            <span>${escHtml(i)}</span>
-          </li>`).join('')}
+        ${items.map(i=>`<li><div class="check-icon">✓</div><span>${escHtml(i)}</span></li>`).join('')}
       </ul>
     </div>`;
 }
 
-function renderMore(topics, nicheData, niche) {
-  document.getElementById('tab-more').innerHTML = `
+function renderMore(topics,nicheData,niche){
+  document.getElementById('tab-more').innerHTML=`
     <div class="ideas-grid">
-      ${topics.map((t, idx) => {
-        const pts  = pick(POINTS[niche]);
-        const h    = pick(nicheData.hooks);
-        const tags = pickN(nicheData.hashtags, 5);
-        return `
-          <div class="idea-card" style="border-color:var(--border)">
-            <div class="idea-header">
-              <div class="idea-title-wrap">
-                <div class="idea-number">Alternative Idea ${idx+1}</div>
-                <div class="idea-title">${escHtml(capitalize(t))}</div>
-              </div>
+      ${topics.map((t,idx)=>{
+        const pts=pick(POINTS[niche]);
+        const h=pick(nicheData.hooks);
+        const tags=pickN(nicheData.hashtags,5);
+        return `<div class="idea-card">
+          <div class="idea-card-glow"></div>
+          <div class="idea-header">
+            <div>
+              <div class="idea-number">Alternative Idea ${idx+1}</div>
+              <div class="idea-title">${escHtml(cap(t))}</div>
             </div>
-            <div class="script-block" style="padding-top:0;border-bottom:none">
-              <div class="script-block-label">Hook</div>
-              <div class="script-block-text">${escHtml(h)}</div>
-            </div>
-            <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px">
-              ${tags.map(tg=>`<div class="hashtag">${tg}</div>`).join('')}
-            </div>
-          </div>`;
+          </div>
+          <div class="script-block" style="padding-top:0;border-bottom:none">
+            <div class="script-block-label">Suggested Hook</div>
+            <div class="script-block-text">${escHtml(h)}</div>
+          </div>
+          <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px">
+            ${tags.map(tg=>`<div class="hashtag">${tg}</div>`).join('')}
+          </div>
+        </div>`;
       }).join('')}
     </div>`;
 }
 
-async function copyText(text) {
-  try { await navigator.clipboard.writeText(text); showToast('✓ Copied!'); }
-  catch { showToast('⚠ Copy failed — try selecting manually'); }
-}
-
-async function copyAll() {
-  if (!currentData) return;
-  const { hook, body, cta, caption } = currentData;
+async function copyAll(){
+  if(!currentData)return;
+  const{hook,body,cta,caption}=currentData;
   copyText(`HOOK:\n${hook}\n\nBODY:\n${body}\n\nCALL TO ACTION:\n${cta}\n\nCAPTION:\n${caption}`);
 }
-
-async function copyHashtags() {
-  if (!currentData) return;
+async function copyHashtags(){
+  if(!currentData)return;
   copyText(currentData.tags.join(' '));
 }
 
-function escHtml(str) {
-  return String(str)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;').replace(/\n/g,'<br>');
+/* ─────────────────────────────────────────────────────────────
+   CAPTION GENERATOR
+───────────────────────────────────────────────────────────── */
+function generateCaption(){
+  const topic=document.getElementById('cap-topic').value.trim()||'my latest content';
+  const niche=document.getElementById('cap-niche').value;
+  const style=document.getElementById('cap-style').value;
+  const cta=document.querySelector('#cap-ctas .pill.active').dataset.cta;
+  const styleData=CAPTION_TEMPLATES[style]||CAPTION_TEMPLATES.engaging;
+  const CTAs={
+    save:"\n\n💾 Save this for later.",
+    comment:"\n\n👇 Drop your thoughts in the comments.",
+    follow:"\n\n➕ Follow for more like this.",
+    share:"\n\n🔄 Share this if it helped.",
+    link:"\n\n🔗 Full guide — link in bio.",
+    none:""
+  };
+  const ctaText=CTAs[cta]||'';
+
+  const variants=[];
+  const styleKeys=Object.keys(CAPTION_TEMPLATES);
+  const usedStyles=[style];
+  let tries=0;
+  while(variants.length<3&&tries<20){
+    tries++;
+    const sKey=tries===1?style:pick(styleKeys.filter(k=>!usedStyles.includes(k))||styleKeys);
+    usedStyles.push(sKey);
+    const tData=CAPTION_TEMPLATES[sKey];
+    if(!tData)continue;
+    const pre=pick(tData.pre);
+    const bodyTpls=tData.body[niche]||tData.body.lifestyle;
+    const bodyTpl=pick(bodyTpls);
+    const body=bodyTpl.replace(/\{TOPIC\}/g,topic);
+    variants.push({label:sKey.charAt(0).toUpperCase()+sKey.slice(1),text:`${pre}\n\n${body}${ctaText}`});
+  }
+  const tags=[...pickN(NICHES[niche]?.hashtags||[],8),...pickN(UNIVERSAL,3)];
+
+  let html=`<div class="glass-card">
+    <div class="card-title"><div class="card-title-dot"></div>Your Captions — click any to copy</div>
+    ${variants.map((v,i)=>`
+      <div style="margin-bottom:14px">
+        <div class="bio-variant-label">${v.label} Style</div>
+        <div class="caption-result" onclick="copyText(this.dataset.text)" data-text="${v.text.replace(/"/g,'&quot;')}">${escHtml(v.text)}</div>
+      </div>`).join('')}
+    <div class="section-divider"><div class="section-divider-line"></div><div class="section-divider-text">Suggested hashtags</div><div class="section-divider-line"></div></div>
+    <div class="hashtag-cloud">
+      ${tags.map(t=>`<div class="hashtag" onclick="copyText('${t}')">${t}</div>`).join('')}
+    </div>
+    <div class="output-actions" style="margin-top:18px">
+      <button class="btn-action primary" onclick="generateCaption()">↺ Regenerate</button>
+      <button class="btn-action" onclick="copyText(document.querySelectorAll('.caption-result')[0].dataset.text)">Copy First</button>
+    </div>
+  </div>`;
+
+  const out=document.getElementById('captionOutput');
+  out.style.display='block';
+  out.innerHTML=html;
+  out.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-function capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
+/* ─────────────────────────────────────────────────────────────
+   BIO GENERATOR
+───────────────────────────────────────────────────────────── */
+function generateBio(){
+  const name=document.getElementById('bio-name').value.trim();
+  const niche=document.getElementById('bio-niche').value;
+  const usp=document.getElementById('bio-usp').value.trim();
+  const ctaInput=document.getElementById('bio-cta').value.trim();
+  const style=document.querySelector('#bio-styles .pill.active').dataset.style;
 
-document.getElementById('keyword').addEventListener('keydown', e => {
-  if (e.key === 'Enter') generate();
+  const uspText=usp||'sharing everything I learn';
+  const ctaText=ctaInput||'📌 Save this page';
+
+  // Choose template bank
+  const banks=[BIO_TEMPLATES.punchy,BIO_TEMPLATES.premium];
+  const styleBank=style==='premium'?BIO_TEMPLATES.premium:BIO_TEMPLATES.punchy;
+
+  // Get niche templates or fall back to lifestyle
+  const nicheTpls=styleBank[niche]||styleBank.lifestyle;
+  const allTpls=[...nicheTpls];
+
+  // Add from the other bank for variety
+  const otherBank=style==='premium'?BIO_TEMPLATES.punchy:BIO_TEMPLATES.premium;
+  const otherTpls=otherBank[niche]||otherBank.lifestyle;
+  allTpls.push(...otherTpls);
+
+  const vars={USP:uspText,CTA:ctaText,NAME:name||'Creator'};
+  const used=[];
+  const variants=[];
+  let tries=0;
+  while(variants.length<3&&tries<20){
+    tries++;
+    const tpl=pick(allTpls);
+    if(used.includes(tpl))continue;
+    used.push(tpl);
+    variants.push(fillTpl(tpl,vars));
+  }
+
+  const styleLabels={punchy:'Punchy & Direct',premium:'Premium & Elevated',minimal:'Minimal',emoji:'Emoji-rich',authority:'Authority',story:'Story-led'};
+
+  let html=`<div class="glass-card">
+    <div class="card-title"><div class="card-title-dot"></div>Your Bio Variants — click to copy</div>
+    ${variants.map((v,i)=>`
+      <div style="margin-bottom:14px">
+        <div class="bio-variant-label">Variant ${i+1}</div>
+        <div class="bio-output" onclick="copyText(this.dataset.text)" data-text="${v.replace(/"/g,'&quot;')}">${escHtml(v)}</div>
+      </div>`).join('')}
+    <div class="output-actions">
+      <button class="btn-action primary" onclick="generateBio()">↺ Regenerate</button>
+    </div>
+  </div>`;
+
+  const out=document.getElementById('bioOutput');
+  out.style.display='block';
+  out.innerHTML=html;
+  out.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ─────────────────────────────────────────────────────────────
+   HASHTAG PACK BUILDER
+───────────────────────────────────────────────────────────── */
+function generateHashtagPack(){
+  const niche=document.getElementById('hash-niche').value;
+  const size=parseInt(document.getElementById('hash-size').value);
+  const mix=document.querySelector('#hash-mix .pill.active').dataset.mix;
+
+  const nicheData=NICHES[niche];
+  const nicheTags=nicheData?.hashtags||[];
+  const viralTags=HASHTAG_PACKS.viral;
+  const growthTags=HASHTAG_PACKS.growth;
+  const nichExtra=HASHTAG_PACKS.niche_extra[niche]||[];
+  const universal=UNIVERSAL;
+
+  let tags=[];
+  if(mix==='viral'){
+    tags=[...pickN(viralTags,6),...pickN(nicheTags,size-9),...pickN(universal,3)];
+  } else if(mix==='niche'){
+    tags=[...pickN(nicheTags,size-7),...pickN(nichExtra,4),...pickN(universal,3)];
+  } else if(mix==='growth'){
+    tags=[...pickN(growthTags,6),...pickN(nicheTags,size-9),...pickN(universal,3)];
+  } else {
+    tags=[...pickN(nicheTags,Math.floor(size*.55)),...pickN(viralTags,Math.floor(size*.2)),...pickN(growthTags,Math.floor(size*.15)),...pickN(universal,3)];
+  }
+  tags=[...new Set(tags)].slice(0,size);
+
+  const html=`<div class="glass-card">
+    <div class="card-title"><div class="card-title-dot"></div>${tags.length} Hashtags — click any to copy individually</div>
+    <div class="hashtag-cloud">
+      ${tags.map(t=>`<div class="hashtag" onclick="copyText('${t}')">${t}</div>`).join('')}
+    </div>
+    <div class="output-actions" style="margin-top:18px">
+      <button class="btn-action primary" onclick="generateHashtagPack()">↺ Regenerate</button>
+      <button class="btn-action" onclick="copyText('${tags.join(' ')}')">Copy All ${tags.length} Tags</button>
+    </div>
+  </div>`;
+
+  const out=document.getElementById('hashtagPackOutput');
+  out.style.display='block';
+  out.innerHTML=html;
+  out.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ─────────────────────────────────────────────────────────────
+   KEYBOARD SHORTCUT
+───────────────────────────────────────────────────────────── */
+document.getElementById('keyword').addEventListener('keydown',e=>{
+  if(e.key==='Enter')generate();
 });
 </script>
 </body>
